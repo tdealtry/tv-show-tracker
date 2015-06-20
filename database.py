@@ -1,3 +1,5 @@
+# Initial DB setup
+
 import sqlite3
 
 conn = sqlite3.connect('tvshows.db')
