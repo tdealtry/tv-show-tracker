@@ -12,6 +12,13 @@ tvShow = "Simpsons"
 
 tableStart = '<table class="wikitable plainrowheaders" style="width'
 tableEnd = '</table>'
+
+tableRowStart = '<tr'
+tableRowEnd = '</tr>'
+
+tableDateStart = '<td'
+tableDateEnd = '</td>'
+
 wikiLinkPrefix = '<a href="http://en.wikipedia.org/'
 
 
@@ -53,6 +60,11 @@ def get_number_of_tables(file_name):
     return number_of_tables
 
 
+def get_number_of_table_rows(table):
+    number_of_table_rows = len(re.findall(tableRowStart, table))
+    return number_of_table_rows
+
+
 def get_tables(file_name):
     tables = []
     content = read_html(file_name)
@@ -63,19 +75,31 @@ def get_tables(file_name):
     return tables
 
 
+def get_table_rows(table):
+    table_rows = []
+    for number in range(get_number_of_table_rows(table)):
+        table_rows.append(tableRowStart + table.split(tableRowStart)[number + 1].split(tableRowEnd)[0] + tableRowEnd)
+    return table_rows
+
+
 def get_episodes(table):
     episodes = re.findall("vevent", table)
     return episodes
+
+
+def get_table_row_data(table):
+    episodes = get_episodes(table)
+    table_row_data = re.compile(r'<td.*>')
+    write_html("files/strip.html", table_row_data.sub('', ''.join(episodes)))
 
 
 crawl(tvShow)
 get_tables('files/output.html')
 fix_a_href('files/tables.html')
 
-# print(get_tables('files/output.html')[0])
-# print(len(get_tables("files/output.html")))
+tables = get_tables('files/output.html')
+table_rows = get_table_rows(tables[0])
+for table_row in table_rows:
+    print(table_row)
 
-
-for i in range(len(get_tables("files/output.html"))):
-    print(len(get_episodes(get_tables("files/output.html")[i])))
 
