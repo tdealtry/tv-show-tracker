@@ -1,14 +1,16 @@
 # import database
 # import sqlite3
-# import wikipedia_crawler
+# import lxml
 
+from html_IO import *
 import wikipydia
 import tvshowlist
 import re
+from bs4 import BeautifulSoup
 
 # tvShow = "Vikings"
-# tvShow = "Sherlock"
-tvShow = "Simpsons"
+tvShow = "Sherlock"
+# tvShow = "Simpsons"
 
 tableStart = '<table class="wikitable plainrowheaders" style="width'
 tableEnd = '</table>'
@@ -93,13 +95,9 @@ def get_table_row_data(table):
     write_html("files/strip.html", table_row_data.sub('', ''.join(episodes)))
 
 
-crawl(tvShow)
-get_tables('files/output.html')
-fix_a_href('files/tables.html')
+def test():
+    crawl(tvShow)
+    get_tables('files/output.html')
+    fix_a_href('files/tables.html')
 
-tables = get_tables('files/output.html')
-table_rows = get_table_rows(tables[0])
-for table_row in table_rows:
-    print(table_row)
-
-
+test()

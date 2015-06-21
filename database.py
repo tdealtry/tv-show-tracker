@@ -2,8 +2,7 @@
 
 import sqlite3
 
-conn = sqlite3.connect('tvshows.db')
-c = conn.cursor()
+c = sqlite3.connect('tv_shows.db').cursor()
 
 c.execute('''select 'drop table ' || name || ';' from sqlite_master 
         where type = 'table';''')
