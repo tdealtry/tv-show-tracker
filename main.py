@@ -1,16 +1,15 @@
 # import database
 # import sqlite3
 # import lxml
+# from bs4 import BeautifulSoup
 
-from html_IO import *
 import wikipydia
-import tvshowlist
 import re
-from bs4 import BeautifulSoup
 
-# tvShow = "Vikings"
-tvShow = "Sherlock"
-# tvShow = "Simpsons"
+
+# tvShow = 'Vikings'
+tvShow = 'Sherlock'
+# tvShow = 'Simpsons'
 
 tableStart = '<table class="wikitable plainrowheaders" style="width'
 tableEnd = '</table>'
@@ -24,37 +23,55 @@ tableDateEnd = '</td>'
 wikiLinkPrefix = '<a href="http://en.wikipedia.org/'
 
 
+def get_tv_show_link(title):
+    """Crawls the Wikipedia URL of the 'List of Episodes' page of the given TV Show
+
+    @title: string - title of the TV Show
+    """
+
+    search_query = 'list of ' + title + ' episodes'
+    tv_show_url = wikipydia.opensearch(search_query)[-1][0]
+    return tv_show_url
+
+
+def get_tv_show_code(title):
+    """Gives the TV Show title and the Wikipedia Show Code
+
+    @tvShowURL: string - tvShowTitleToLink(title)
+    @title: string - title of the TV Show
+    """
+
+    tv_show_url = get_tv_show_link(title)
+    tv_show = ''.join(tv_show_url.split('wiki/')[1].split('_')[2:-1])
+    tv_show_code = tv_show_url.split('wiki/')[1]
+    return [tv_show, tv_show_code]
+
+
 def crawl(tv_show):
-    tv_show_link = tvshowlist.get_tv_show_link(tv_show)
-    tv_show_code = tvshowlist.get_tv_show_code(tv_show)
+    tv_show_link = get_tv_show_link(tv_show)
+    tv_show_code = get_tv_show_code(tv_show)
     print('You successfully crawled: ', tv_show_link, tv_show_code)
-    tv_show_content = wikipydia.query_text_rendered(tv_show_code[1])["html"].encode('ascii', 'ignore')
-    write_html("files/output.html", tv_show_content)
+    tv_show_content = wikipydia.query_text_rendered(tv_show_code[1])['html'].encode('ascii', 'ignore')
+    write_html('files/output.html', tv_show_content)
 
 
 def write_html(file_name, content):
-    f = open(file_name, "w")
+    f = open(file_name, 'w')
     f.write(content)
     f.close()
 
 
 def read_html(file_name):
-    f = open(file_name, "r")
+    f = open(file_name, 'r')
     content = f.read()
     f.close()
     return content
 
 
-def fix_a_href(file_name):
+def fix_links(file_name):
     content = read_html(file_name)
-    fixed_a_href = re.sub(r'<a href="/', wikiLinkPrefix, content)
-    write_html("files/fixed_a_href.html", fixed_a_href)
-
-
-def remove_a_href(file_name):
-    content = read_html(file_name)
-    removed_a_href = re.compile(r'<a href.*>')
-    write_html("files/removed_a_href.html", removed_a_href.sub('', content))
+    fixed_links = re.sub(r'<a href="/', wikiLinkPrefix, content)
+    write_html('files/fixed_a_href.html', fixed_links)
 
 
 def get_number_of_tables(file_name):
@@ -73,7 +90,7 @@ def get_tables(file_name):
     for number in range(get_number_of_tables(file_name)):
         tables.append(tableStart + content.split(tableStart)[number + 1].split(tableEnd)[0] + tableEnd)
     tables_as_html = ''.join(tables)
-    write_html("files/tables.html", tables_as_html)
+    write_html('files/tables.html', tables_as_html)
     return tables
 
 
@@ -85,19 +102,19 @@ def get_table_rows(table):
 
 
 def get_episodes(table):
-    episodes = re.findall("vevent", table)
+    episodes = re.findall('vevent', table)
     return episodes
 
 
 def get_table_row_data(table):
     episodes = get_episodes(table)
     table_row_data = re.compile(r'<td.*>')
-    write_html("files/strip.html", table_row_data.sub('', ''.join(episodes)))
+    write_html('files/strip.html', table_row_data.sub('', ''.join(episodes)))
 
 
 def test():
     crawl(tvShow)
     get_tables('files/output.html')
-    fix_a_href('files/tables.html')
+    fix_links('files/tables.html')
 
 test()
