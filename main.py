@@ -7,7 +7,8 @@ import tvshowlist
 import re
 
 # tvShow = "Vikings"
-tvShow = "Sherlock"
+# tvShow = "Sherlock"
+tvShow = "Simpsons"
 
 tableStart = '<table class="wikitable plainrowheaders" style="width'
 tableEnd = '</table>'
@@ -62,19 +63,19 @@ def get_tables(file_name):
     return tables
 
 
-def make_list(table):
-    result = []
-    all_rows = table.findAll('tr')
-    for row in all_rows:
-        result.append([])
-        all_columns = row.findAll('td')
-    for col in all_columns:
-        the_strings = [unicode(s) for s in col.findAll(text=True)]
-        the_text = ''.join(the_strings)
-        result[-1].append(the_text)
-    return result
+def get_episodes(table):
+    episodes = re.findall("vevent", table)
+    return episodes
+
 
 crawl(tvShow)
 get_tables('files/output.html')
 fix_a_href('files/tables.html')
+
+# print(get_tables('files/output.html')[0])
+# print(len(get_tables("files/output.html")))
+
+
+for i in range(len(get_tables("files/output.html"))):
+    print(len(get_episodes(get_tables("files/output.html")[i])))
 
