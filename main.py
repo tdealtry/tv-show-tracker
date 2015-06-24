@@ -124,9 +124,9 @@ def test():
     # noe = get_number_of_episodes(get_tables('tmp/removed_links.html')[0])
 
     # get_table_rows(get_tables('tmp/removed_links.html')[season - 1])
-    tags = get_table_rows(get_tables('tmp/removed_links.html')[season - 1])[0]
-    tags = ''.join(ElTree.fromstring(tags).itertext())
-    tags = filter(None, tags.split('\n'))
+    # tags = get_table_rows(get_tables('tmp/removed_links.html')[season - 1])[0]
+    # tags = ''.join(ElTree.fromstring(tags).itertext())
+    # tags = filter(None, tags.split('\n'))
     # print(tags)
 
     episodes = []
@@ -136,24 +136,18 @@ def test():
                                    get_tables('tmp/removed_links.html')[
                                        season - 1])[episode]).itertext()).split('\n')))
 
-    print(episodes)
-
     eps = []
-
     for episode in episodes:
         eps.append(episode[0] + ', ' +
                    episode[1] + ', ' +
                    episode[episodes[0].index('Title')] + ', ' +
                    episode[episodes[0].index('Original air date')])
 
-    print(eps)
-
-    print(eps[0])
-    print(eps[1])
-    print(eps[2])
-
-    #season_dict = {row[0]: list(row[1:]) for row in zip(eps)}
-    #print(season_dict)
+    # season_dict = {row[0]: list(row[1:]) for row in zip(*eps)}
+    # print(season_dict)
+    #
+    # for i in season_dict:
+    #     print(i, season_dict[i])
 
 
 test()
