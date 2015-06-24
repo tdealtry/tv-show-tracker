@@ -118,17 +118,27 @@ def test():
     remove_links('tmp/tables.html')
 
     # fix_links('tmp/tables.html')
-    # print(get_table_rows(get_tables('tmp/removed_links.html')[season - 1]))
+    # tr = get_table_rows(get_tables('tmp/removed_links.html')[season - 1])
 
-    season_dict = {}
+    # Number of Episodes
+    # noe = get_number_of_episodes(get_tables('tmp/removed_links.html')[0])
 
-    print(get_number_of_episodes(get_tables('tmp/removed_links.html')[0]))
-
-    get_table_rows(get_tables('tmp/removed_links.html')[season - 1])
+    # get_table_rows(get_tables('tmp/removed_links.html')[season - 1])
     tags = get_table_rows(get_tables('tmp/removed_links.html')[season - 1])[0]
     tags = ''.join(ElTree.fromstring(tags).itertext())
+    tags = filter(None, tags.split('\n'))
+    # print(tags)
 
-    print(tags)
+    episodes = []
+    for episode in range(get_number_of_episodes(get_tables('tmp/removed_links.html')[0])):
+        episodes.append(filter(None, ''.join(ElTree.fromstring(get_table_rows(get_tables('tmp/removed_links.html')[season - 1])[episode]).itertext()).split('\n')))
+
+    for episode in episodes:
+        print(episode[0] + ', ' + episode[1] + ', ' + episode[2] + ', ' +episode[6])
+
+    # season_dict = {row[0]: row[1:] for row in zip(episodes)}
+
+    # print(season_dict)
 
 
 test()
