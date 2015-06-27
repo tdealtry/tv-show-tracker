@@ -3,10 +3,14 @@ import re
 import xml.etree.ElementTree as ElTree
 import os
 
-# tvShow = 'Vikings'
-# tvShow = 'Sherlock'
-# tvShow = 'Simpsons'
 
+def __init__(tv_show, season):
+    crawl(tv_show)
+    safe_dict_to_file(tv_show, season, create_season_dict(tv_show, season, rl))
+    build_html(tv_show, season, build_html_body(tv_show, create_season_dict(tv_show, season, rl)))
+
+
+# VALUES, VARIABLES, ETC
 tableStart = '<table class="wikitable plainrowheaders" style="width'
 tableEnd = '</table>'
 
@@ -19,7 +23,9 @@ tableDateEnd = '</td>'
 wikiLinkPrefix = '<a href="http://en.wikipedia.org/'
 
 path_sep = '/'
-# For Windows use '\'
+# For Windows: use '\'
+
+rl = 'tmp/removed_links.html'
 
 
 def get_tv_show_link(title):
@@ -70,7 +76,7 @@ def remove_links(file_name):
     removed_links = re.sub(r'</?a.*?>', '', content)
     # remove NEW LINE HTML tags
     removed_n = re.sub(r'<br />\n', ' ', removed_links)
-    write_file('tmp/removed_links.html', removed_n)
+    write_file(rl, removed_n)
 
 
 def write_file(file_name, content):
@@ -142,12 +148,63 @@ def safe_dict_to_file(tv_show, season, season_dict):
     write_file(file_path, str(season_dict))
 
 
-def __init__():
-    tv_show = input('TVS: ')
-    season = input('season: ')
+def dict_to_html(tv_show, season, input_file_name):
+    season_dict = create_season_dict(tv_show, season, input_file_name)
+    tags = [tag for tag in season_dict.keys()]
+    rows = zip(*[season_dict[tag] for tag in tags])
+    return dict(rows=rows, colnames=tags)
 
-    crawl(tv_show)
-    safe_dict_to_file(tv_show, season, create_season_dict(tv_show, season, 'tmp/removed_links.html'))
+
+def dict_to_html_table(dictionary):
+    html_table = ''
+
+    checkbox = '''<input type="button" class="css-button" value="watch">
+    '''
+
+    tr = '''<tr>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    </tr>
+    '''
+
+    for episode in range(len(dictionary['no_in_season'])):
+        html_table += tr % (dictionary['no_in_season'][episode],
+                            dictionary['title'][episode],
+                            dictionary['original_air_date'][episode],
+                            checkbox)
+    return html_table
 
 
-__init__()
+def build_html_body(tv_show, season_dict):
+    table = '''<h1>%s</h1>
+    <table class="rwd-table" align="center">
+    <tr>
+    <th>Episode</th>
+    <th>Title</th>
+    <th>Date</th>
+    <th>Watched</th>
+    </tr>
+    %s
+    </table>''' % (tv_show, dict_to_html_table(season_dict))
+    return table
+
+
+def build_html(tv_show, season, table):
+    body = '''<!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+        <meta charset="UTF-8">
+        <title>%s %d</title>
+    </head>
+    <body>
+    %s
+    </body>
+    </html>''' % (tv_show, season, table)
+
+    write_file('simple.html', body.encode('utf-8', 'ignore'))
+
+
+__init__(input('TVS: '), input('SEA: '))
