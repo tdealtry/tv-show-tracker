@@ -28,4 +28,25 @@ A python based (not yet, but hopefully soon) web-controllable TV Show tracker to
 - Crawl HTML content - gives `output.html`
 - Strip down to *tables only* - gives `tables.html`
 - Fix the links to absolute links - gives `fixed_links.html`
->>>>>>> d6ae237763bf99df35bc7c2ca760a4469d151b65
+
+## Changes to be made
+
+### wikipydia
+
+```Python
+Traceback (most recent call last):
+  File "/home/fabian/Documents/Python/tvshowtracker/main.py", line 20, in <module>
+    vikings.get_wiki_link()
+  File "/home/fabian/Documents/Python/tvshowtracker/main.py", line 15, in get_wiki_link
+    wiki_link = wikipydia.opensearch(search_query)[-1][0]
+  File "/home/fabian/.local/lib/python3.4/site-packages/wikipydia/__init__.py", line 47, in opensearch
+    return _run_query(query_args, language)
+  File "/home/fabian/.local/lib/python3.4/site-packages/wikipydia/__init__.py", line 33, in _run_query
+    data = _unicode_urlencode(args)
+  File "/home/fabian/.local/lib/python3.4/site-packages/wikipydia/__init__.py", line 25, in _unicode_urlencode
+    return urllib.urlencode([(k, isinstance(v, unicode) and v.encode('utf-8') or v)
+AttributeError: 'module' object has no attribute 'urlencode' ```
+
+`urllib.urlencode` to `urllib.parse.urlencode`
+`urllib.urlopen` to `urllib.request.urlopen`
+`data.encode('utf8')`

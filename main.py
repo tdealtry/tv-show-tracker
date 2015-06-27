@@ -1,223 +1,130 @@
-import wikipydia
+import pkgs.wikipydia as wipy
 import re
 import xml.etree.ElementTree as ElTree
-import os
+# import os
 
-html_tables = []
+wiki_link_prefix = '<a href="http://en.wikipedia.org/'
 
+output = 'tmp/output.html'
+links_removed = 'tmp/removed_links.html'
+links_fixed = 'tmp/fixed_links.html'
 
-def __init__(tv_show):
-    crawl(tv_show)
-    for season in range(1, get_number_of_tables(op) + 1):
-        # safe_dict_to_file(tv_show, season, create_season_dict(tv_show, season, rl))
-        html_tables.append(build_html_body(create_season_dict(season, rl)))
-    build_html(tv_show, ''.join(html_tables))
+standard_encoding = 'utf-8'
 
+season_table_start = '<table class="wikitable plainrowheaders" style="width'
+table_end = '</table>'
 
-# ERROR MESSAGES
-tv_show_error_msg = '''I am sorry! The TV Show you have entered, cannot be found.
-Maybe you forgot a "the" in the title?'''
+table_row_start = '<tr'
+table_row_end = '</tr>'
 
-# VALUES, VARIABLES, ETC
-tableStart = '<table class="wikitable plainrowheaders" style="width'
-tableEnd = '</table>'
-
-tableRowStart = '<tr'
-tableRowEnd = '</tr>'
-
-tableDateStart = '<td'
-tableDateEnd = '</td>'
-
-wikiLinkPrefix = '<a href="http://en.wikipedia.org/'
-
-path_sep = '/'
-# For Windows: use '\'
-
-rl = 'tmp/removed_links.html'
-op = 'tmp/output.html'
-
-
-def get_tv_show_link(title):
-    """Crawls the Wiki URL of the 'List of Episodes' page of the given TV Show
-
-    @title: string - title of the TV Show
-    """
-
-    search_query = 'list of ' + title + ' episodes'
-    tv_show_url = wikipydia.opensearch(search_query)[-1][0]
-    return tv_show_url
-
-
-def get_tv_show_code(title):
-    """Gives the TV Show title and the Wiki Show Code
-
-    @tvShowURL: string - tvShowTitleToLink(title)
-    @title: string - title of the TV Show
-    """
-
-    tv_show_url = get_tv_show_link(title)
-    tv_show = ''.join(tv_show_url.split('wiki/')[1].split('_')[2:-1])
-    tv_show_code = tv_show_url.split('wiki/')[1]
-    return [tv_show, tv_show_code]
-
-
-def crawl(tv_show):
-    try:
-        wikipydia.query_text_rendered(get_tv_show_code(tv_show)[1])
-    except IndexError:
-        print(tv_show_error_msg)
-
-    write_file('tmp/output.html',
-               wikipydia.query_text_rendered(get_tv_show_code(tv_show)[1])['html'].encode('ascii', 'ignore'))
-
-
-def get_tables(file_name):
-    tables = []
-    for number in range(get_number_of_tables(file_name)):
-        tables.append(tableStart + read_html(file_name).split(tableStart)[number + 1].split(tableEnd)[0] + tableEnd)
-    write_file('tmp/tables.html', ''.join(tables))
-    return tables
-
-
-def fix_links(file_name):
-    content = read_html(file_name)
-    fixed_links = re.sub(r'<a href="/', wikiLinkPrefix, content)
-    write_file('tmp/fixed_links.html', fixed_links)
-
-
-def remove_links(file_name):
-    content = read_html(file_name)
-    removed_links = re.sub(r'</?a.*?>', '', content)
-    # remove NEW LINE HTML tags
-    removed_n = re.sub(r'<br />\n', ' ', removed_links)
-    write_file(rl, removed_n)
+table_date_start = '<td'
+table_date_end = '</td>'
 
 
 def write_file(file_name, content):
-    f = open(file_name, 'w')
-    f.write(content)
-    f.close()
+    file = open(file_name, 'w')
+    file.write(content)
+    file.close()
+    return file_name
 
 
-def read_html(file_name):
-    f = open(file_name, 'r')
-    content = f.read()
-    f.close()
+def read_file(file_name):
+    file = open(file_name, 'r')
+    content = file.read()
     return content
 
 
-def get_number_of_tables(file_name):
-    number_of_tables = len(re.findall(tableStart, read_html(file_name)))
-    return number_of_tables
+class ErrorMessages:
+
+    index_error_msg = 'We cannot find your TV Show. Maybe you have a type in there?'
 
 
-def get_number_of_table_rows(table):
-    number_of_table_rows = len(re.findall(tableRowStart, table))
-    return number_of_table_rows
+class TVShow:
+
+    def __init__(self, title):
+        self.title = title
+        self.output_file = 'tmp/' + title + '_output.html'
+        self.tables = []
+        self.table_rows = []
+        self.episodes = []
+        self.seasons = self.get_no_of_seasons()
+
+    def get_wiki_link(self):
+        search_query = 'list of ' + self.title + ' episodes'
+        wiki_link = wipy.opensearch(search_query)[-1][0]
+        return wiki_link
+
+    def get_wiki_code(self):
+        wiki_link = self.get_wiki_link()
+        tv_show_code = wiki_link.split('wiki/')[1]
+        return tv_show_code
+
+    def get_content(self):
+        try:
+            wipy.query_text_rendered(self.get_wiki_code()[1])
+            pass
+        except IndexError:
+            print(ErrorMessages.index_error_msg)
+            raise
+        write_file(self.output_file,
+                   wipy.query_text_rendered(self.get_wiki_code())['html'])
+
+    def handle_links(self, handle='remove'):
+        if handle == 'fix':
+            fixed_links = re.sub(r'<a href="/', wiki_link_prefix, read_file(self.output_file))
+            return fixed_links
+        elif handle == 'remove':
+            no_links = re.sub(r'</?a.*?>', '', read_file(self.output_file))
+            return no_links
+
+    def get_no_of_seasons(self):
+        no_of_seasons = len(re.findall(season_table_start, read_file(self.output_file)))
+        return no_of_seasons
+
+    def get_no_of_episodes(self, table):
+        no_of_episodes = re.findall('vevent', table)
+        return no_of_episodes
+
+    def get_no_of_table_rows(self, table):
+        no_of_table_rows = len(re.findall(table_row_start, table))
+        return no_of_table_rows
+
+    def strip_content(self):
+        for number in range(self.get_no_of_seasons()):
+            self.tables.append(season_table_start +
+                               read_file(self.output_file).split(season_table_start)[number + 1].split(table_end)[0] +
+                               table_end)
+        write_file(self.output_file, ''.join(self.tables))
+        return self.tables
+
+    def get_table_rows(self, table):
+        for number in range(self.get_no_of_table_rows(table)):
+            self.table_rows.append(table_row_start +
+                                   table.split(table_row_start)[number + 1].split(table_row_end)[0] +
+                                   table_row_end)
+        return self.table_rows
+
+    def create_episode_dict(self, season):
+        tmp_episodes = []
+        for episode in range(self.get_no_of_episodes(self.tables[0])):
+            tmp_episodes.append(filter(None,
+                                       ''.join(ElTree.fromstring(self.get_table_rows(
+                                           self.tables[season - 1])[episode]).itertext()).split('\n')))
+        for episode in self.episodes:
+            episodes = [episode[1],
+                        episode[self.episodes[0].index('Title')],
+                        episode[self.episodes[0].index('Original air date')]]
+            self.episodes.append(episodes)
 
 
-def get_table_rows(table):
-    table_rows = []
-    for number in range(get_number_of_table_rows(table)):
-        table_rows.append(tableRowStart + table.split(tableRowStart)[number + 1].split(tableRowEnd)[0] + tableRowEnd)
-    return table_rows
 
 
-def get_number_of_episodes(table):
-    episodes = re.findall('vevent', table)
-    return len(episodes)
+vikings = TVShow('Vikings')
+print('Wiki Link:\n', vikings.get_wiki_link())
+print('Wiki Code:\n', vikings.get_wiki_code())
+vikings.get_content()
+write_file(vikings.output_file, vikings.handle_links())
+vikings.strip_content()
+print('Number of seasons:\n', vikings.seasons)
+print(vikings.get_table_rows(vikings.tables[0]))
 
-
-def create_season_dict(season, input_file_name):
-    # get_tables('tmp/output.html')
-    remove_links(op)
-
-    episodes = []
-    for episode in range(get_number_of_episodes(get_tables(input_file_name)[0])):
-        episodes.append(filter(None,
-                               ''.join(ElTree.fromstring(get_table_rows(
-                                   get_tables(input_file_name)[season - 1])[episode]).itertext()).split('\n')))
-
-    eps = []
-    for episode in episodes:
-        ep = [episode[1],
-              episode[episodes[0].index('Title')],
-              episode[episodes[0].index('Original air date')]]
-        eps.append(ep)
-
-    eps[0][0], eps[0][1], eps[0][2] = 'no_in_season', 'title', 'original_air_date'
-
-    season_dict = {row[0]: list(row[1:]) for row in zip(*eps)}
-
-    return season_dict
-
-
-def safe_dict_to_file(tv_show, season, season_dict):
-    season_path = 'tv_shows' + path_sep + tv_show.lower() + path_sep
-    file_path = season_path + tv_show.lower() + '_' + str(season) + '.txt'
-    if not os.path.isdir(season_path):
-        os.makedirs(season_path)
-    write_file(file_path, str(season_dict))
-
-
-def dict_to_html(season, input_file_name):
-    season_dict = create_season_dict(season, input_file_name)
-    tags = [tag for tag in season_dict.keys()]
-    rows = zip(*[season_dict[tag] for tag in tags])
-    return dict(rows=rows, colnames=tags)
-
-
-def dict_to_html_table(dictionary):
-    html_table = ''
-
-    checkbox = '''<input type="button" class="css-button" value="watch">
-    '''
-
-    tr = '''<tr>
-    <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
-    </tr>
-    '''
-
-    for episode in range(len(dictionary['no_in_season'])):
-        html_table += tr % (dictionary['no_in_season'][episode],
-                            dictionary['title'][episode],
-                            dictionary['original_air_date'][episode],
-                            checkbox)
-    return html_table
-
-
-def build_html_body(season_dict):
-    table = '''
-    <table class="rwd-table" align="center">
-    <tr>
-    <th>Episode</th>
-    <th>Title</th>
-    <th>Date</th>
-    <th>Watched</th>
-    </tr>
-    %s
-    </table>''' % (dict_to_html_table(season_dict))
-    return table
-
-
-def build_html(tv_show, tables):
-    body = '''<!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <link rel="stylesheet" type="text/css" href="style.css">
-        <meta charset="UTF-8">
-        <title>%s</title>
-    </head>
-    <body>
-    <h1>%s</h1>
-    %s
-    </body>
-    </html>''' % (tv_show, tv_show, tables)
-
-    write_file('simple.html', body.encode('utf-8', 'ignore'))
-
-
-__init__(input('TVS: '))
