@@ -5,7 +5,6 @@
 
 import wikipydia
 import re
-
 import xml.etree.ElementTree as ElTree
 
 # tvShow = 'Vikings'
@@ -117,18 +116,6 @@ def test():
     get_tables('tmp/output.html')
     remove_links('tmp/tables.html')
 
-    # fix_links('tmp/tables.html')
-    # tr = get_table_rows(get_tables('tmp/removed_links.html')[season - 1])
-
-    # Number of Episodes
-    # noe = get_number_of_episodes(get_tables('tmp/removed_links.html')[0])
-
-    # get_table_rows(get_tables('tmp/removed_links.html')[season - 1])
-    # tags = get_table_rows(get_tables('tmp/removed_links.html')[season - 1])[0]
-    # tags = ''.join(ElTree.fromstring(tags).itertext())
-    # tags = filter(None, tags.split('\n'))
-    # print(tags)
-
     episodes = []
     for episode in range(get_number_of_episodes(get_tables('tmp/removed_links.html')[0])):
         episodes.append(filter(None,
@@ -138,16 +125,14 @@ def test():
 
     eps = []
     for episode in episodes:
-        eps.append(episode[0] + ', ' +
-                   episode[1] + ', ' +
-                   episode[episodes[0].index('Title')] + ', ' +
-                   episode[episodes[0].index('Original air date')])
+        ep = [episode[0],
+              episode[1],
+              episode[episodes[0].index('Title')],
+              episode[episodes[0].index('Original air date')]]
+        eps.append(ep)
 
-    # season_dict = {row[0]: list(row[1:]) for row in zip(*eps)}
-    # print(season_dict)
-    #
-    # for i in season_dict:
-    #     print(i, season_dict[i])
+    season_dict = {row[0]: list(row[1:]) for row in zip(*eps)}
 
+    return season_dict
 
 test()
