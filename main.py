@@ -1,11 +1,7 @@
-# import database
-# import sqlite3
-# import lxml
-# from bs4 import BeautifulSoup
-
 import wikipydia
 import re
 import xml.etree.ElementTree as ElTree
+import os
 
 # tvShow = 'Vikings'
 # tvShow = 'Sherlock'
@@ -21,6 +17,9 @@ tableDateStart = '<td'
 tableDateEnd = '</td>'
 
 wikiLinkPrefix = '<a href="http://en.wikipedia.org/'
+
+path_sep = '/'
+# For Windows use '\'
 
 
 def get_tv_show_link(title):
@@ -48,7 +47,7 @@ def get_tv_show_code(title):
 
 
 def crawl(tv_show):
-    write_html('tmp/output.html',
+    write_file('tmp/output.html',
                wikipydia.query_text_rendered(get_tv_show_code(tv_show)[1])['html'].encode('ascii', 'ignore'))
 
 
@@ -56,14 +55,14 @@ def get_tables(file_name):
     tables = []
     for number in range(get_number_of_tables(file_name)):
         tables.append(tableStart + read_html(file_name).split(tableStart)[number + 1].split(tableEnd)[0] + tableEnd)
-    write_html('tmp/tables.html', ''.join(tables))
+    write_file('tmp/tables.html', ''.join(tables))
     return tables
 
 
 def fix_links(file_name):
     content = read_html(file_name)
     fixed_links = re.sub(r'<a href="/', wikiLinkPrefix, content)
-    write_html('tmp/fixed_links.html', fixed_links)
+    write_file('tmp/fixed_links.html', fixed_links)
 
 
 def remove_links(file_name):
@@ -71,10 +70,10 @@ def remove_links(file_name):
     removed_links = re.sub(r'</?a.*?>', '', content)
     # remove NEW LINE HTML tags
     removed_n = re.sub(r'<br />\n', ' ', removed_links)
-    write_html('tmp/removed_links.html', removed_n)
+    write_file('tmp/removed_links.html', removed_n)
 
 
-def write_html(file_name, content):
+def write_file(file_name, content):
     f = open(file_name, 'w')
     f.write(content)
     f.close()
@@ -109,9 +108,43 @@ def get_number_of_episodes(table):
     return len(episodes)
 
 
+def create_season_dict(tv_show, season, input_file_name):
+    crawl(tv_show)
+    get_tables('tmp/output.html')
+    remove_links('tmp/tables.html')
+
+    episodes = []
+    for episode in range(get_number_of_episodes(get_tables(input_file_name)[0])):
+        episodes.append(filter(None,
+                               ''.join(ElTree.fromstring(get_table_rows(
+                                   get_tables(input_file_name)[
+                                       season - 1])[episode]).itertext()).split('\n')))
+
+    eps = []
+    for episode in episodes:
+        ep = [episode[1],
+              episode[episodes[0].index('Title')],
+              episode[episodes[0].index('Original air date')]]
+        eps.append(ep)
+
+    eps[0][0], eps[0][1], eps[0][2] = 'no_in_season', 'title', 'original_air_date'
+
+    season_dict = {row[0]: list(row[1:]) for row in zip(*eps)}
+
+    return season_dict
+
+
+def safe_dict_to_file(tv_show, season, season_dict):
+    season_path = 'tvshows' + path_sep + tv_show.lower() + path_sep
+    file_path = season_path + tv_show.lower() + '_' + str(season) + '.txt'
+    if not os.path.isdir(season_path):
+        os.makedirs(season_path)
+    write_file(file_path, str(season_dict))
+
+
 def test():
-    tv_show = "The Blacklist"  # input('TV Show: ')
-    season = 1  # input('Season: ')
+    tv_show = input('TV Show: ')
+    season = input('Season: ')
     crawl(tv_show)
     get_tables('tmp/output.html')
     remove_links('tmp/tables.html')
@@ -125,14 +158,29 @@ def test():
 
     eps = []
     for episode in episodes:
-        ep = [episode[0],
-              episode[1],
+        ep = [episode[1],
               episode[episodes[0].index('Title')],
               episode[episodes[0].index('Original air date')]]
         eps.append(ep)
 
+    eps[0][0], eps[0][1], eps[0][2] = 'no_in_season', 'title', 'original_air_date'
+
     season_dict = {row[0]: list(row[1:]) for row in zip(*eps)}
 
+    for i in season_dict:
+        print(i, season_dict[i])
     return season_dict
 
-test()
+    create_season_dict("Vikings", 1, "tmp/removed_links.html")
+    safe_dict_to_file("Vikings", 1, create_season_dict("Vikings", 1, "tmp/removed_links.html"))
+
+
+def __init__():
+    tv_show = input('TVS: ')
+    season = input('season: ')
+
+    crawl(tv_show)
+    safe_dict_to_file(tv_show, season, create_season_dict(tv_show, season, 'tmp/removed_links.html'))
+
+
+__init__()
