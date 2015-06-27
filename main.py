@@ -135,44 +135,11 @@ def create_season_dict(tv_show, season, input_file_name):
 
 
 def safe_dict_to_file(tv_show, season, season_dict):
-    season_path = 'tvshows' + path_sep + tv_show.lower() + path_sep
+    season_path = 'tv_shows' + path_sep + tv_show.lower() + path_sep
     file_path = season_path + tv_show.lower() + '_' + str(season) + '.txt'
     if not os.path.isdir(season_path):
         os.makedirs(season_path)
     write_file(file_path, str(season_dict))
-
-
-def test():
-    tv_show = input('TV Show: ')
-    season = input('Season: ')
-    crawl(tv_show)
-    get_tables('tmp/output.html')
-    remove_links('tmp/tables.html')
-
-    episodes = []
-    for episode in range(get_number_of_episodes(get_tables('tmp/removed_links.html')[0])):
-        episodes.append(filter(None,
-                               ''.join(ElTree.fromstring(get_table_rows(
-                                   get_tables('tmp/removed_links.html')[
-                                       season - 1])[episode]).itertext()).split('\n')))
-
-    eps = []
-    for episode in episodes:
-        ep = [episode[1],
-              episode[episodes[0].index('Title')],
-              episode[episodes[0].index('Original air date')]]
-        eps.append(ep)
-
-    eps[0][0], eps[0][1], eps[0][2] = 'no_in_season', 'title', 'original_air_date'
-
-    season_dict = {row[0]: list(row[1:]) for row in zip(*eps)}
-
-    for i in season_dict:
-        print(i, season_dict[i])
-    return season_dict
-
-    create_season_dict("Vikings", 1, "tmp/removed_links.html")
-    safe_dict_to_file("Vikings", 1, create_season_dict("Vikings", 1, "tmp/removed_links.html"))
 
 
 def __init__():
