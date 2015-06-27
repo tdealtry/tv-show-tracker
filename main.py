@@ -3,12 +3,20 @@ import re
 import xml.etree.ElementTree as ElTree
 import os
 
+html_tables = []
 
-def __init__(tv_show, season):
+
+def __init__(tv_show):
     crawl(tv_show)
-    safe_dict_to_file(tv_show, season, create_season_dict(tv_show, season, rl))
-    build_html(tv_show, season, build_html_body(tv_show, create_season_dict(tv_show, season, rl)))
+    for season in range(1, get_number_of_tables(op) + 1):
+        # safe_dict_to_file(tv_show, season, create_season_dict(tv_show, season, rl))
+        html_tables.append(build_html_body(create_season_dict(season, rl)))
+    build_html(tv_show, ''.join(html_tables))
 
+
+# ERROR MESSAGES
+tv_show_error_msg = '''I am sorry! The TV Show you have entered, cannot be found.
+Maybe you forgot a "the" in the title?'''
 
 # VALUES, VARIABLES, ETC
 tableStart = '<table class="wikitable plainrowheaders" style="width'
@@ -26,6 +34,7 @@ path_sep = '/'
 # For Windows: use '\'
 
 rl = 'tmp/removed_links.html'
+op = 'tmp/output.html'
 
 
 def get_tv_show_link(title):
@@ -53,6 +62,11 @@ def get_tv_show_code(title):
 
 
 def crawl(tv_show):
+    try:
+        wikipydia.query_text_rendered(get_tv_show_code(tv_show)[1])
+    except IndexError:
+        print(tv_show_error_msg)
+
     write_file('tmp/output.html',
                wikipydia.query_text_rendered(get_tv_show_code(tv_show)[1])['html'].encode('ascii', 'ignore'))
 
@@ -114,17 +128,15 @@ def get_number_of_episodes(table):
     return len(episodes)
 
 
-def create_season_dict(tv_show, season, input_file_name):
-    crawl(tv_show)
-    get_tables('tmp/output.html')
-    remove_links('tmp/tables.html')
+def create_season_dict(season, input_file_name):
+    # get_tables('tmp/output.html')
+    remove_links(op)
 
     episodes = []
     for episode in range(get_number_of_episodes(get_tables(input_file_name)[0])):
         episodes.append(filter(None,
                                ''.join(ElTree.fromstring(get_table_rows(
-                                   get_tables(input_file_name)[
-                                       season - 1])[episode]).itertext()).split('\n')))
+                                   get_tables(input_file_name)[season - 1])[episode]).itertext()).split('\n')))
 
     eps = []
     for episode in episodes:
@@ -148,8 +160,8 @@ def safe_dict_to_file(tv_show, season, season_dict):
     write_file(file_path, str(season_dict))
 
 
-def dict_to_html(tv_show, season, input_file_name):
-    season_dict = create_season_dict(tv_show, season, input_file_name)
+def dict_to_html(season, input_file_name):
+    season_dict = create_season_dict(season, input_file_name)
     tags = [tag for tag in season_dict.keys()]
     rows = zip(*[season_dict[tag] for tag in tags])
     return dict(rows=rows, colnames=tags)
@@ -177,8 +189,8 @@ def dict_to_html_table(dictionary):
     return html_table
 
 
-def build_html_body(tv_show, season_dict):
-    table = '''<h1>%s</h1>
+def build_html_body(season_dict):
+    table = '''
     <table class="rwd-table" align="center">
     <tr>
     <th>Episode</th>
@@ -187,24 +199,25 @@ def build_html_body(tv_show, season_dict):
     <th>Watched</th>
     </tr>
     %s
-    </table>''' % (tv_show, dict_to_html_table(season_dict))
+    </table>''' % (dict_to_html_table(season_dict))
     return table
 
 
-def build_html(tv_show, season, table):
+def build_html(tv_show, tables):
     body = '''<!DOCTYPE html>
     <html lang="en">
     <head>
     <link rel="stylesheet" type="text/css" href="style.css">
         <meta charset="UTF-8">
-        <title>%s %d</title>
+        <title>%s</title>
     </head>
     <body>
+    <h1>%s</h1>
     %s
     </body>
-    </html>''' % (tv_show, season, table)
+    </html>''' % (tv_show, tv_show, tables)
 
     write_file('simple.html', body.encode('utf-8', 'ignore'))
 
 
-__init__(input('TVS: '), input('SEA: '))
+__init__(input('TVS: '))
