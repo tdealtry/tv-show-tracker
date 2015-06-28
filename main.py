@@ -2,7 +2,7 @@ import pkgs.wikipydia as wipy
 import re
 from html2text import html2text
 # import os
-import pprint
+# import pprint
 # import time
 
 wiki_link_prefix = '<a href="http://en.wikipedia.org/'
