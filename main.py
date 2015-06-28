@@ -1,7 +1,7 @@
 import pkgs.wikipydia as wipy
 import re
 from html2text import html2text
-# import os
+import os, glob
 # import pprint
 # import time
 
@@ -209,29 +209,44 @@ class TVShow:
 
         write_file(season_file, body)
 
+    def build_html_overview(self):
+        for f in glob.glob('./tmp/*output.html'):
+            os.remove(f)
+        seasons = []
+        html_files = glob.glob('./tmp/*.html')
+        for file in html_files:
+            f = file.split('tmp/')[1]
+            tv_show = f.split('_output_')[0]
+            season = f.split('_output_')[1].split('.html')[0]
+            tup = [tv_show, season, file]
+            seasons.append(tup)
+        for s in seasons:
+            print(s)
 
-def run(tv_show):
+def run(tv_show, season):
     tvs = TVShow(tv_show)
     tvs.get_content()
     tvs.handle_links()
     tvs.strip_content()
 
-    print(tvs.table_rows)
+    print(tvs.get_wiki_link(), '\n', tvs.get_wiki_code())
 
-    print(tvs.get_wiki_link())
-    print(tvs.get_wiki_code())
+    tvs.build_html(season)
 
-    # tvs.build_html(1)
-    # tvs.build_html(2)
-    # tvs.build_html(3)
-    for number in range(1, len(tvs.tables)):
-        tvs.build_html(number)
+    tvs.build_html_overview()
 
-    write_file(tvs.output_file, ''.join(tvs.tables))
+    # write_file(tvs.output_file, ''.join(tvs.tables))
     # pprint.pprint(tvs.create_episode_dict(1))
     # tvs.build_html(1)
 
 # run('Greys Anatomy')
 # run('The Blacklist')
-run('Vikings')
+# run('Vikings')
 # run('Sherlock')
+
+# for s in range(1, 11):
+# run('Greys Anatomy', 1)
+
+
+
+
