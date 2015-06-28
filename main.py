@@ -221,6 +221,9 @@ def run(tv_show):
     print(tvs.get_wiki_link())
     print(tvs.get_wiki_code())
 
+    # tvs.build_html(1)
+    # tvs.build_html(2)
+    # tvs.build_html(3)
     for number in range(1, len(tvs.tables)):
         tvs.build_html(number)
 
