@@ -214,22 +214,28 @@ class TVShow:
 
         return html_table
 
-    def build_html_body(self, season):
+    def build_html_body(self):
         print('EXEC', self.build_html_body.__name__)
+        html_tables = ''
+        print(self.seasons)
+        for season in range(1, self.seasons + 1):
 
-        table = '''<table class="rwd-table align="center">
-        <h2>Season %d</h2>
-        <tr>
-        <th>Episode</th>
-        <th>Title</th>
-        <th>Date</th>
-        <th>Watched</th>
-        </tr>
-        %s
-        </table>''' % (season, self.dict_to_html_table(self.create_episode_dict(season)))
-        return table
+            table = '''<table class="rwd-table align="center">
+            <h2>Season %s</h2>
+            <tr>
+            <th>Episode</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Watched</th>
+            </tr>
+            %s
+            </table>''' % (str(season), self.dict_to_html_table(self.create_episode_dict(season)))
 
-    def build_html(self, season):
+            html_tables += table
+            print(season, html_tables)
+        return html_tables
+
+    def build_html(self):
         print('EXEC', self.build_html.__name__)
 
         body = '''<!DOCTYPE html>
@@ -243,9 +249,9 @@ class TVShow:
         <h1>%s</h1>
         %s
         </body>
-        </html>''' % (self.title, self.title, self.build_html_body(season))
+        </html>''' % (self.title, self.title, self.build_html_body())
 
-        season_file = self.output_file.split('.html')[0] + '_' + str(season) + '.html'
+        season_file = self.output_file  # self.output_file.split('.html')[0] + '_' + str(season) + '.html'
 
         write_file(season_file, body)
 
@@ -266,15 +272,15 @@ class TVShow:
             # print(s)
 
 
-def run(tv_show, season):
-    print('EXEC', run.__name__, tv_show, season)
+def run(tv_show):
+    print('EXEC', run.__name__, tv_show)
 
     tvs = TVShow(tv_show)
     tvs.get_content()
     tvs.handle_links()
     tvs.strip_content()
 
-    tvs.build_html(season)
+    tvs.build_html()
 
     tvs.build_html_overview()
 
@@ -285,9 +291,9 @@ def run(tv_show, season):
 
 # run('Greys Anatomy')
 # run('The Blacklist')
-# run('Vikings')
+run('Vikings')
 # run('Sherlock')
-run('The Simpsons', 1)
+# run('The Simpsons', 1)
 
 
 # for s in range(1, 27):
