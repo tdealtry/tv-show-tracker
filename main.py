@@ -1,7 +1,8 @@
 import pkgs.wikipydia as wipy
 import re
 from html2text import html2text
-import os, glob
+import os
+import glob
 # import pprint
 # import time
 
@@ -27,6 +28,8 @@ path_sep = '/'
 
 
 def write_file(file_name, content):
+    print('EXEC', write_file.__name__)
+
     file = open(file_name, 'w')
     file.write(content)
     file.close()
@@ -34,6 +37,8 @@ def write_file(file_name, content):
 
 
 def read_file(file_name):
+    print('EXEC', read_file.__name__)
+
     file = open(file_name, 'r')
     content = file.read()
     return content
@@ -47,26 +52,35 @@ class ErrorMessages:
 class TVShow:
 
     def __init__(self, title):
+        print('EXEC', self.__init__.__name__)
+
         self.title = title
         self.output_file = 'tmp' + path_sep + '_'.join(self.title.split()) + '_output.html'
         write_file(self.output_file, '')
         self.tables = []
         self.table_rows = []
         self.episodes = []
-        self.seasons = self.get_no_of_seasons()
+        # self.seasons = self.get_no_of_seasons()
+        # print('self.seasons:', self.seasons)
         self.html_tables = ''
 
     def get_wiki_link(self):
+        print('EXEC', self.get_wiki_link.__name__)
+
         search_query = 'list of ' + self.title + ' episodes'
         wiki_link = wipy.opensearch(search_query)[-1][0]
         return wiki_link
 
     def get_wiki_code(self):
+        print('EXEC', self.get_wiki_code.__name__)
+
         wiki_link = self.get_wiki_link()
         tv_show_code = wiki_link.split('wiki/')[1]
         return tv_show_code
 
     def get_content(self):
+        print('EXEC', self.get_content.__name__)
+
         try:
             wipy.query_text_rendered(self.get_wiki_code()[1])
             pass
@@ -77,6 +91,8 @@ class TVShow:
                    wipy.query_text_rendered(self.get_wiki_code())['html'])
 
     def handle_links(self, handle='remove'):
+        print('EXEC', self.handle_links.__name__)
+
         if handle == 'fix':
             fixed_links = re.sub(r'<a href="/', wiki_link_prefix, read_file(self.output_file))
             write_file(self.output_file, fixed_links)
@@ -87,18 +103,26 @@ class TVShow:
             return no_links
 
     def get_no_of_seasons(self):
+        print('EXEC', self.get_no_of_seasons.__name__)
+
         no_of_seasons = len(re.findall(season_table_start, read_file(self.output_file)))
         return no_of_seasons
 
     def get_no_of_episodes(self, table):
+        print('EXEC', self.get_no_of_episodes.__name__)
+
         no_of_episodes = len(re.findall('vevent', table))
         return no_of_episodes
 
     def get_no_of_table_rows(self, table):
+        print('EXEC', self.get_no_of_table_rows.__name__)
+
         no_of_table_rows = len(re.findall(table_row_start, table))
         return no_of_table_rows
 
     def strip_content(self):
+        print('EXEC', self.strip_content.__name__)
+
         for number in range(self.get_no_of_seasons()):
             self.tables.append(season_table_start +
                                read_file(self.output_file).split(season_table_start)[number + 1].split(table_end)[0] +
@@ -109,6 +133,8 @@ class TVShow:
         return self.tables
 
     def get_table_rows(self, table):
+        print('EXEC', self.get_table_rows.__name__)
+
         for number in range(self.get_no_of_table_rows(table)):
             table_row = '' + \
                         table_row_start + \
@@ -119,6 +145,8 @@ class TVShow:
         return self.table_rows
 
     def strip_html_to_table_rows(self, season):
+        print('EXEC', self.strip_html_to_table_rows.__name__)
+
         # headers = re.sub('\n', '', html2text(self.get_table_rows(self.tables[season - 1])[0])).split('|')
         tmp_episodes = []
         for episode in range(len(self.get_table_rows(self.tables[season - 1]))):
@@ -147,17 +175,23 @@ class TVShow:
         return self.episodes
 
     def create_episode_dict(self, season):
+        print('EXEC', self.create_episode_dict.__name__)
+
         # headers = re.sub('\n', '', html2text(self.get_table_rows(self.tables[0])[0])).split('|')
         season_dict = {row[0]: list(row[1:]) for row in zip(*self.strip_html_to_table_rows(season))}
         return season_dict
 
     def dict_to_html(self, season):
+        print('EXEC', self.dict_to_html.__name__)
+
         season_dict = self.create_episode_dict(season)
         tags = [tag for tag in season_dict.keys()]
         rows = zip(*[season_dict[tag] for tag in tags])
         return dict(rows=rows, colnames=tags)
 
     def dict_to_html_table(self, dictionary):
+        print('EXEC', self.dict_to_html_table.__name__)
+
         html_table = ''
 
         checkbox = '<input type="button" class="css-button" value="watch">'
@@ -178,6 +212,8 @@ class TVShow:
         return html_table
 
     def build_html_body(self, season):
+        print('EXEC', self.build_html_body.__name__)
+
         table = '''<table class="rwd-table align="center">
         <h2>Season %d</h2>
         <tr>
@@ -191,6 +227,7 @@ class TVShow:
         return table
 
     def build_html(self, season):
+        print('EXEC', self.build_html.__name__)
 
         body = '''<!DOCTYPE html>
         <html lang="en"
@@ -210,6 +247,8 @@ class TVShow:
         write_file(season_file, body)
 
     def build_html_overview(self):
+        print('EXEC', self.build_html_overview.__name__)
+
         for f in glob.glob('./tmp/*output.html'):
             os.remove(f)
         seasons = []
@@ -220,21 +259,23 @@ class TVShow:
             season = f.split('_output_')[1].split('.html')[0]
             tup = [tv_show, season, file]
             seasons.append(tup)
-        for s in seasons:
-            print(s)
+        # for s in seasons:
+            # print(s)
+
 
 def run(tv_show, season):
+    print('EXEC', run.__name__, tv_show, season)
+
     tvs = TVShow(tv_show)
     tvs.get_content()
     tvs.handle_links()
     tvs.strip_content()
 
-    print(tvs.get_wiki_link(), '\n', tvs.get_wiki_code())
-
     tvs.build_html(season)
 
     tvs.build_html_overview()
 
+    # print(tvs.get_wiki_link(), '\n', tvs.get_wiki_code())
     # write_file(tvs.output_file, ''.join(tvs.tables))
     # pprint.pprint(tvs.create_episode_dict(1))
     # tvs.build_html(1)
@@ -243,10 +284,8 @@ def run(tv_show, season):
 # run('The Blacklist')
 # run('Vikings')
 # run('Sherlock')
-
-# for s in range(1, 11):
-# run('Greys Anatomy', 1)
+run('The Simpsons', 1)
 
 
-
-
+# for s in range(1, 27):
+#     run('The Simpsons', s)
