@@ -108,10 +108,10 @@ class TVShow:
         no_of_seasons = len(re.findall(season_table_start, read_file(self.output_file)))
         return no_of_seasons
 
-    def get_no_of_episodes(self, season):
+    def get_no_of_episodes(self, table):
         print('_________EXEC', self.get_no_of_episodes.__name__)
 
-        no_of_episodes = len(re.findall('vevent', self.tables[season]))
+        no_of_episodes = len(re.findall('vevent', table))
         return no_of_episodes
 
     def get_no_of_table_rows(self, table):
@@ -121,23 +121,28 @@ class TVShow:
         return no_of_table_rows
 
     def strip_content(self):
-        print('_________EXEC', self.strip_content.__name__)
+        print('_________EXEC', self.strip_content.__name__, 'Y')
 
+        # write_file('test.html', read_file(self.output_file))
         file = read_file(self.output_file)
         self.seasons = self.get_no_of_seasons()
         for number in range(self.seasons):
-            self.tables.append(season_table_start +
-                               file.split(season_table_start)[number + 1].split(table_end)[0] +
-                               table_end)
+            x = season_table_start + file.split(season_table_start)[number + 1].split(table_end)[0] + table_end
+            # print(number, x)
+            self.tables.append(x)
+
+            # print(self.tables)
             if 'vevent' not in self.tables[-1]:  # could be faster, if if before append
                 self.tables.remove(self.tables[-1])
         self.seasons = self.get_no_of_seasons()
+        # print(''.join(self.tables))
         write_file(self.output_file, ''.join(self.tables))
-        # pprint.pprint(''.join(self.tables))  # is correct, error in build_html!
+        # print(''.join(self.tables))  # is correct, error in build_html!
         return self.tables
 
     def get_table_rows(self, table):
         print('_________EXEC', self.get_table_rows.__name__)
+        self.table_rows = []  # removes 1 unwanted copy
 
         for number in range(self.get_no_of_table_rows(table)):
             table_row = '' + \
@@ -147,12 +152,12 @@ class TVShow:
             # pprint.pprint(table_row)
             if 'vevent' or 'Title' in table_row:
                 self.table_rows.append(table_row)
-        # pprint.pprint(self.table_rows)
+            # pprint.pprint(self.table_rows)
         return self.table_rows
 
     def strip_html_to_table_rows(self, season):
         print('_________EXEC', self.strip_html_to_table_rows.__name__)
-        print('Season:', season)
+        # print('Season:', season)
 
         # headers = re.sub('\n', '', html2text(self.get_table_rows(self.tables[season - 1])[0])).split('|')
         tmp_episodes = []
@@ -168,11 +173,13 @@ class TVShow:
             tmp_episodes[tmp_episodes.index(e)] = ep
             if len(e) < 3:
                 tmp_episodes.remove(e)
+        # print(tmp_episodes)
 
         for episode in tmp_episodes:
-            self.episodes.append([episode[0],
-                                  episode[tmp_episodes[0].index('Title')],
-                                  episode[tmp_episodes[0].index('Original air date')]])
+            if 'Title' not in episode:
+                self.episodes.append([episode[0],
+                                      episode[tmp_episodes[0].index('Title')],
+                                      episode[tmp_episodes[0].index('Original air date')]])
 
         self.episodes[0][0], self.episodes[0][1], self.episodes[0][2] = 'no', 'title', 'date'
 
@@ -180,6 +187,7 @@ class TVShow:
             for element in episode:
                 episode[episode.index(element)] = element.strip()
 
+        # print(self.episodes)
         return self.episodes
 
     def create_episode_dict(self, season):
@@ -188,7 +196,7 @@ class TVShow:
 
         # headers = re.sub('\n', '', html2text(self.get_table_rows(self.tables[0])[0])).split('|')
         season_dict = {row[0]: list(row[1:]) for row in zip(*self.strip_html_to_table_rows(season))}
-        # print(season_dict)
+        # print(season, season_dict)
         return season_dict
 
     def dict_to_html(self, season):
@@ -206,7 +214,7 @@ class TVShow:
 
         checkbox = '<input type="button" class="css-button" value="watch">'
 
-        tr = '''<tr>
+        tr = '''<tr onclick="watchMe()">
         <td>%s</td>
         <td>%s</td>
         <td>%s</td>
@@ -225,7 +233,7 @@ class TVShow:
         print('_________EXEC', self.build_html_body.__name__)
         html_tables = ''
         self.seasons = self.get_no_of_seasons()
-        print('All Seasons: ', self.seasons)
+        # print('All Seasons: ', self.seasons)
         for season in range(1, self.seasons + 1):
 
             table = '''<table class="rwd-table align="center">
@@ -241,7 +249,7 @@ class TVShow:
             # print(season, table)
 
             html_tables += table
-            print(season)
+            # print(season)
             # pprint.pprint(table)
         return html_tables
 
@@ -251,6 +259,11 @@ class TVShow:
         body = '''<!DOCTYPE html>
         <html lang="en"
         <head>
+        <script>
+        function watchMe() {
+            document.getElementById("demo").style.color = "red";
+        }
+        </script>
         <link rel="stylesheet" type="text/css" href="style.css">
         <meta charset="UTF-8">
         <title>%s</title>
@@ -278,8 +291,6 @@ class TVShow:
             season = f.split('_output_')[1].split('.html')[0]
             tup = [tv_show, season, file]
             seasons.append(tup)
-        # for s in seasons:
-            # print(s)
 
 
 def run(tv_show):
@@ -291,6 +302,10 @@ def run(tv_show):
     tvs.strip_content()
 
     tvs.build_html()
+
+    return tvs.episodes
+
+    # return tvs.
 
     # tvs.build_html_overview()
 
@@ -305,8 +320,5 @@ run('The Blacklist')
 # run('Sherlock')
 # run('The Simpsons', 1)
 
-
-# for s in range(1, 27):
-#     run('The Simpsons', s)
 
 pprint.pprint('Finished :*')
