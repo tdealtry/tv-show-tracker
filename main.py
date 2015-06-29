@@ -108,10 +108,10 @@ class TVShow:
         no_of_seasons = len(re.findall(season_table_start, read_file(self.output_file)))
         return no_of_seasons
 
-    def get_no_of_episodes(self, table):
+    def get_no_of_episodes(self, season):
         print('_________EXEC', self.get_no_of_episodes.__name__)
 
-        no_of_episodes = len(re.findall('vevent', table))
+        no_of_episodes = len(re.findall('vevent', self.tables[season]))
         return no_of_episodes
 
     def get_no_of_table_rows(self, table):
@@ -144,8 +144,10 @@ class TVShow:
                         table_row_start + \
                         table.split(table_row_start)[number + 1].split(table_row_end)[0] + \
                         table_row_end
+            # pprint.pprint(table_row)
             if 'vevent' or 'Title' in table_row:
                 self.table_rows.append(table_row)
+        # pprint.pprint(self.table_rows)
         return self.table_rows
 
     def strip_html_to_table_rows(self, season):
@@ -154,7 +156,6 @@ class TVShow:
 
         # headers = re.sub('\n', '', html2text(self.get_table_rows(self.tables[season - 1])[0])).split('|')
         tmp_episodes = []
-
         table_rows = self.get_table_rows(self.tables[season - 1])
         # print('tablerows', table_rows)
         for episode in range(len(table_rows)):
@@ -183,9 +184,11 @@ class TVShow:
 
     def create_episode_dict(self, season):
         print('_________EXEC', self.create_episode_dict.__name__)
+        # print(self.strip_html_to_table_rows(season))
 
         # headers = re.sub('\n', '', html2text(self.get_table_rows(self.tables[0])[0])).split('|')
         season_dict = {row[0]: list(row[1:]) for row in zip(*self.strip_html_to_table_rows(season))}
+        # print(season_dict)
         return season_dict
 
     def dict_to_html(self, season):
@@ -235,6 +238,7 @@ class TVShow:
             </tr>
             %s
             </table>''' % (str(season), self.dict_to_html_table(self.create_episode_dict(season)))
+            # print(season, table)
 
             html_tables += table
             print(season)
@@ -296,8 +300,8 @@ def run(tv_show):
     # tvs.build_html(1)
 
 # run('Greys Anatomy')
-# run('The Blacklist')
-run('Vikings')
+run('The Blacklist')
+# run('Vikings')
 # run('Sherlock')
 # run('The Simpsons', 1)
 
