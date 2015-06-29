@@ -60,7 +60,7 @@ class TVShow:
         self.tables = []
         self.table_rows = []
         self.episodes = []
-        # self.seasons = self.get_no_of_seasons()
+        self.seasons = int
         # print('self.seasons:', self.seasons)
         self.html_tables = ''
 
@@ -123,11 +123,13 @@ class TVShow:
     def strip_content(self):
         print('EXEC', self.strip_content.__name__)
 
-        for number in range(self.get_no_of_seasons()):
+        file = read_file(self.output_file)
+        self.seasons = self.get_no_of_seasons()
+        for number in range(self.seasons):
             self.tables.append(season_table_start +
-                               read_file(self.output_file).split(season_table_start)[number + 1].split(table_end)[0] +
+                               file.split(season_table_start)[number + 1].split(table_end)[0] +
                                table_end)
-            if 'vevent' not in self.tables[-1]:
+            if 'vevent' not in self.tables[-1]:  # could be faster, if if before append
                 self.tables.remove(self.tables[-1])
         write_file(self.output_file, ''.join(self.tables))
         return self.tables
@@ -149,11 +151,12 @@ class TVShow:
 
         # headers = re.sub('\n', '', html2text(self.get_table_rows(self.tables[season - 1])[0])).split('|')
         tmp_episodes = []
-        for episode in range(len(self.get_table_rows(self.tables[season - 1]))):
+
+        table_rows = self.get_table_rows(self.tables[season - 1])
+        for episode in range(len(table_rows)):
             tmp_episodes.append(re.sub('\n',
                                        '',
-                                       html2text(self.get_table_rows(
-                                           self.tables[season - 1])[episode])).split('|'))
+                                       html2text(table_rows[episode])).split('|'))
 
         for e in tmp_episodes:
             ep = [episode.strip() for episode in e]
