@@ -1,34 +1,61 @@
-from tkinter import *
-import main
+import os
+import sys
+import time
+
+def clear_screen():
+    os.system(['clear', 'cls'][os.name == 'nt'])
 
 
-class Application(Frame):
+def main_menu():
+    choice = 0
 
-    def create_widgets(self):
-        self.QUIT = Button(self)
-        self.QUIT["text"] = "QUIT"
-        self.QUIT["fg"] = "red"
-        self.QUIT["command"] = self.quit
+    print('1')
+    print('2')
+    print('3')
+    print('4')
+    print('5 to exit')
+    try:
+        choice = int(input('WAS TUN?: '))
+    except ValueError:
+        print("\nBITTE ETWAS EINGEBEN!?!?!?")
 
-        self.QUIT.pack({"side": "left"})
-
-    def __init__(self, master=None):
-        Frame.__init__(self, master)
-        self.pack()
-        self.create_widgets()
-
-        liste = main.run('The Blacklist')
-        self.list_to_gui(liste, 44)
-
-    def list_to_gui(self, liste, episodes):
-        l = Listbox(root, height=episodes)
-        for x in liste:
-            if not 'Title' in x:
-                l.insert(END, x)
-                l.pack()
+    if choice == 1:
+        return 1
+    elif choice == 2:
+        return 2
+    elif choice == 3:
+        return 3
+    elif choice == 4:
+        return 4
+    elif choice == 5:
+        return 5
+    else:
+        return 0
 
 
-root = Tk()
-app = Application(master=root)
-app.mainloop()
-root.destroy()
+def main():
+    clear_screen()
+    lernmodus = 0
+
+    while (True):
+        clear_screen()
+        lernmodus = main_menu()
+        if lernmodus == 1:
+            clear_screen()
+            print(1)
+            time.sleep(3)
+        elif lernmodus == 2:
+            print(2)
+        elif lernmodus == 3:
+            print(3)
+        elif lernmodus == 4:
+            print(4)
+        elif lernmodus == 5:
+            clear_screen()
+            sys.exit()
+        else:
+            print("extremely bad error")
+            break
+
+if __name__ == '__main__':
+    main()

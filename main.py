@@ -2,6 +2,7 @@ import pkgs.wikipydia as wipy
 import re
 from html2text import html2text
 import os
+# import sys
 import glob
 import pprint
 # import time
@@ -314,11 +315,13 @@ def run(tv_show):
     # pprint.pprint(tvs.create_episode_dict(1))
     # tvs.build_html(1)
 
+def clear_screen():
+    os.system(['clear', 'cls'][os.name == 'nt'])
+
 # run('Greys Anatomy')
-run('The Blacklist')
+# run('Game of Thrones')
 # run('Vikings')
 # run('Sherlock')
 # run('The Simpsons', 1)
-
 
 pprint.pprint('Finished :*')
