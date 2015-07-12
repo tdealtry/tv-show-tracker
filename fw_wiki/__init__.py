@@ -12,9 +12,9 @@ jd@j2labs.net
 changes made by mail@wohfab.de
 """
 
-import urllib.request as request
-import urllib.parse as parse
 import simplejson
+from urllib import parse
+from urllib import request
 
 
 api_url = 'http://%s.wikipedia.org/w/api.php'
