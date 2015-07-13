@@ -12,7 +12,7 @@ jd@j2labs.net
 changes made by mail@wohfab.de
 """
 
-import simplejson
+import json
 from urllib import parse
 from urllib import request
 
@@ -38,8 +38,8 @@ def _run_query(args, language):
     url = api_url % language
     data = _unicode_urlencode(args)
     search_results = request.urlopen(url, data=data.encode('utf-8'))
-    json = simplejson.loads(search_results.read())
-    return json
+    json_output = json.loads(search_results.read())
+    return json_output
 
 
 def opensearch(query, language='en'):
@@ -81,13 +81,13 @@ def query_language_links(titles, language='en', lllimit=10):
         'format': 'json',
         'lllimit': lllimit
     }
-    json = _run_query(query_args, language)
-    titles_map = unnormalize_titles(titles, json)
+    json_op = _run_query(query_args, language)
+    titles_map = unnormalize_titles(titles, json_op)
     results = {}
-    for page_id in json['query']['pages']:
-        title = titles_map[json['query']['pages'][page_id]['title']]
-        if 'langlinks' in json['query']['pages'][page_id].keys():
-            lang_map = dict([(ll['lang'], ll['*']) for ll in json['query']['pages'][page_id]['langlinks']])
+    for page_id in json_op['query']['pages']:
+        title = titles_map[json_op['query']['pages'][page_id]['title']]
+        if 'langlinks' in json_op['query']['pages'][page_id].keys():
+            lang_map = dict([(ll['lang'], ll['*']) for ll in json_op['query']['pages'][page_id]['langlinks']])
             results[title] = lang_map
     return results
 
@@ -105,11 +105,11 @@ def query_text_raw(titles, language='en'):
         'format': 'json',
         'redirects': ''
     }
-    json = _run_query(query_args, language)
-    for page_id in json['query']['pages']:
+    json_op = _run_query(query_args, language)
+    for page_id in json_op['query']['pages']:
         response = {
-            'text': json['query']['pages'][page_id]['revisions'][0]['*'],
-            'revid': json['query']['pages'][page_id]['lastrevid'],
+            'text': json_op['query']['pages'][page_id]['revisions'][0]['*'],
+            'revid': json_op['query']['pages'][page_id]['lastrevid'],
         }
         return response
 
@@ -125,10 +125,10 @@ def query_text_rendered(page, language='en'):
         'format': 'json',
         'redirects': ''
     }
-    json = _run_query(query_args, language)
+    json_op = _run_query(query_args, language)
     response = {
-        'html': json['parse']['text']['*'],
-        'revid': json['parse']['revid'],
+        'html': json_op['parse']['text']['*'],
+        'revid': json_op['parse']['revid'],
     }
     return response
 
