@@ -38,7 +38,7 @@ def _run_query(args, language):
     url = api_url % language
     data = _unicode_urlencode(args)
     search_results = request.urlopen(url, data=data.encode('utf-8'))
-    json_output = json.loads(str(search_results.read()))
+    json_output = str(json.loads(search_results.read()))
     return json_output
 
 
