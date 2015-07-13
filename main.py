@@ -75,11 +75,11 @@ def add_tv_show(title):
     no_of_tables = len(re.findall(s_t_s, wiki_content))
 
     seasons = [s_t_s +
-               wiki_content.split(s_t_s)[season + 1].split(table_end)[0] +
+               str(wiki_content.split(str.encode(s_t_s))[season + 1].split(str.encode(table_end))[0]) +
                table_end
                for season in range(no_of_tables) if 'vevent' in
                s_t_s +
-               wiki_content.split(s_t_s)[season + 1].split(table_end)[0] +
+               str(wiki_content.split(str.encode(s_t_s))[season + 1].split(str.encode(table_end))[0]) +
                table_end]
 
     i = 1
