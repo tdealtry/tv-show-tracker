@@ -2,13 +2,12 @@ import re
 import os
 import sys
 import time
+import ast
 import fw_wiki as wipy
 
 from lxml import html
 from lxml.html.clean import clean_html
 from lxml import etree
-
-import ast
 
 s_t_s = '<table class="wikitable plainrowheaders"'
 table_end = '</table>'
