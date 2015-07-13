@@ -3,36 +3,20 @@ import os
 import sys
 import time
 import fw_wiki as wipy
-import pprint
 
 from lxml import html
 from lxml.html.clean import clean_html
 from lxml import etree
 
-import ast  # string to list
+import ast
 
-wiki_link_prefix = '<a href="http://en.wikipedia.org/'
-
-output = 'tmp/output.html'
-links_removed = 'tmp/removed_links.html'
-links_fixed = 'tmp/fixed_links.html'
-
-standard_encoding = 'utf-8'
-
-# season_table_start
 s_t_s = '<table class="wikitable plainrowheaders"'
 table_end = '</table>'
 
 table_row_start = '<tr class="vevent"'
 table_row_end = '</tr>'
 
-table_date_start = '<td'
-table_date_end = '</td>'
-
 episodes_start = 'id="Episode'
-
-path_sep = '/'
-# win = '\'
 
 index_error_msg = 'We cannot find your TV Show. Maybe you have a type in there?'
 
@@ -54,12 +38,11 @@ def read_file(file_name):
     return content
 
 
-def add_tv_show(title): 
+def add_tv_show(title):
+    if not title:
+        return
     title_code = re.sub(' ', '_', title)
     tv_show_folder = 'tvshows/' + title_code
-##    try:
-##        os.path.exists(tv_show_folder)
-##    except FileNotFoundError:
 
     search = 'list of ' + title + ' episodes'
 
@@ -89,9 +72,6 @@ def add_tv_show(title):
     wiki_content = re.sub(r'</?a.*?>', '', wiki_content)
         
     no_of_tables = len(re.findall(s_t_s, wiki_content))
-
-    # no_of_episodes = len(re.findall('vevent', wiki_content))
-    # print('Episodes: ' + str(no_of_episodes))
 
     seasons = [s_t_s +
                wiki_content.split(s_t_s)[season + 1].split(table_end)[0] +
@@ -136,7 +116,7 @@ def add_tv_show(title):
             values = [col.text for col in row]
             tvs.append(list(zip(headers, values)))
 
-    tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
+    # tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
     
     return seasons
 
@@ -157,12 +137,11 @@ def display_header(to_display):
 
 def delete_empty_dirs():
     for path, dirs, files in os.walk('.'):
-        if os.listdir(path) == []:
+        if not os.listdir(path):
             os.rmdir(path)
 
 
 def display_overview():
-    # delete_empty_dirs()
     clear_screen()
     display_header('TVShowTracker')    
     path = 'tvshows/'
@@ -170,11 +149,20 @@ def display_overview():
     for path, dirs, files in os.walk(path):
         dirs.sort()        
         for directory in dirs:
-            tv_show = '%7s' %('[' + str(dirs.index(directory) + 1) + ']   ') + '%-20s' %(re.sub('_', ' ', directory))  # + '%-7s' %(watched_total)
+            tv_show = '%7s' % ('[' + str(dirs.index(directory) + 1) + ']   ') + \
+                      '%-20s' % (re.sub('_', ' ', directory))
             print(tv_show)
 
-    tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
-    print('\n [number] of tv show\n\n [+] add new / update show\n [-] remove show from list\n [e] exit\n [o] open wikipedia page in browser\n [h] help page')
+    try:
+        tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
+    except IndexError:
+        print(' No TVShow added, yet - Enter [+] to add some shows!')
+    print('''\n [number] of tv show\n
+    [+] add new / update show
+    [-] remove show from list
+    [e] exit
+    [o] open wikipedia page in browser
+    [h] help page''')
     which_tvshow = input('\n\n ACTION: ')
     if which_tvshow == 'e':
         sys.exit(0)
@@ -186,11 +174,17 @@ def display_overview():
         display_tvshow(tvshow)
     except (IndexError, ValueError, NameError):
         if which_tvshow == '+':
-            add_tv_show(input(' Which TV Show do you want to add to your collection? ').lower())
+            add_tv_show(input(''' Which TV Show do you want to add to your collection?
+    ''').lower().strip())
         elif which_tvshow == '-':
-            delete_tv_show(input(' Which TV Show should be removed?\nPlease enter the Title of the show, you want to remove.'))
+            delete_tv_show(input(''' Which TV Show should be removed?
+    Please enter the Title of the show, you want to remove.
+    ''').lower().strip())
         elif which_tvshow == 'o':
-            open_wiki_page(input('For which TV Show, should we open the wiki page?\nWe can even look for wiki pages, that are not in your list!\nHINT: Enter the TVShow Title '))
+            open_wiki_page(input(''' For which TV Show, should we open the wiki page?
+    We can even look for wiki pages, that are not in your list!
+    HINT: Enter the TVShow Title:
+    ''').lower().strip())
         display_overview()
     
 
@@ -211,7 +205,7 @@ def open_wiki_page(title):
 def get_watch_status(title, season):
     season_path = 'tvshows/' + title + '/' + str(season)
     season_list = ast.literal_eval(read_file(season_path))
-    watched = len(re.findall('True', str(season_list)))
+    watched = len(re.findall('True', str(season_list[0])))
     total = len(re.findall('False', str(season_list))) + watched
     
     watch_status = '' + str(watched) + '/' + str(total)
@@ -220,24 +214,21 @@ def get_watch_status(title, season):
 
 def display_help():
     clear_screen()
-    os.system('cat README.md')
-    what_to_do_now = input('\n\n [ENTER] to go back to main menu\n ')
-    if what_to_do_now:
-        display_overview()
+    os.system('cat README.md | more')
+    input('\n\n [ENTER] to go back to main menu\n ')
+    display_overview()
 
 
 def display_tvshow(title):
     clear_screen()
     display_header(re.sub('_', ' ', title).capitalize())
-    # title_code = re.sub(' ', '_', title).lower()    
-    # path = 'tvshows/'.format(title) # title_code
     path = 'tvshows/' + title + '/'
     for path, dirs, files in os.walk(path):
         files.sort(key=lambda x: int(x.split('_')[-1][:-4]))
         for season in files:
             season_number = season.split('_')[-1][:-4]
             watched = get_watch_status(title, season)
-            print_season = ' %-7s' %('[' + season_number + ']') + 'Season %2s' %(season_number) + '%7s' %(watched)
+            print_season = ' %-7s' % ('[' + season_number + ']') + 'Season %2s' % season_number + '%7s' % watched
             print(print_season)
     season = input('\n [m]ain menu\n [number] of season\n\n ACTION: ')
     if season == 'm':
@@ -264,11 +255,20 @@ def display_season(title, season):
     
     season_list = read_season(title, season)
     for episode in season_list:
-        ep = ' %-7s' %('[X]' if episode[0] == True else '[ ]') + '%7s' %(str(episode[2])) + '   %5s' %(str(episode[1])) + '   ' + episode[3]
+        ep = ' %-7s' % ('[X]' if episode[0] else '[ ]') + \
+             '%7s' % (str(episode[2])) + \
+             '   %5s' % (str(episode[1])) + \
+             '   ' + \
+             episode[3]
         print(ep)
 
     print('\n WHAT DO YOU WANT TO DO NOW?\n')
-    what_to_do_now = input(' [w]atch/unwatch single episode\n [a]ll episodes toggled\n [m]ain menu\n [b]ack to tv show\n\n ACTION: ')
+    what_to_do_now = input('''
+    [w]atch/unwatch single episode
+    [a]ll episodes toggled
+    [m]ain menu
+    [b]ack to tv show\n
+    ACTION: ''')
     if what_to_do_now == 'm':
         display_overview()
     elif what_to_do_now == 'w':
@@ -306,4 +306,3 @@ def main():
     display_overview()
 
 main()
-
