@@ -205,7 +205,7 @@ def open_wiki_page(title):
 def get_watch_status(title, season):
     season_path = 'tvshows/' + title + '/' + str(season)
     season_list = ast.literal_eval(read_file(season_path))
-    watched = len(re.findall('True', str(season_list[0])))
+    watched = len(re.findall('True', str(season_list)))
     total = len(re.findall('False', str(season_list))) + watched
     
     watch_status = '' + str(watched) + '/' + str(total)

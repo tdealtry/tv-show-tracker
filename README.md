@@ -28,6 +28,9 @@ import ast*
 fw_wiki is a slightly changed form of the 
 [*wikipydia* package](http://github.com/j2labs/wikipydia)
 to make it compatible to Python 3.4.3
+For fw_wiki, you additionally need:
+
+*simplejson*
 
 ____________________________________________________
 
