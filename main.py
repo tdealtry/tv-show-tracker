@@ -176,8 +176,8 @@ def display_overview():
         display_tvshow(tvshow)
     except (IndexError, ValueError, NameError):
         if which_tvshow == '+':
-            add_tv_show(input(''' Which TV Show do you want to add to your collection?
-    ''').lower().strip())
+            add_tv_show(str(input(''' Which TV Show do you want to add to your collection?
+    ''').lower().strip()))
         elif which_tvshow == '-':
             delete_tv_show(input(''' Which TV Show should be removed?
     Please enter the Title of the show, you want to remove.
