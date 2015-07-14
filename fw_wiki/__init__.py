@@ -7,15 +7,12 @@ As a result, this code is also in beta and subject to unexpected brokenness.
 http://en.wikipedia.org/w/api.php
 http://github.com/j2labs/wikipydia
 
-jd@j2labs.net
-
-changes made by mail@wohfab.de
+jd@j2labs.net / changes made by mail@wohfab.de
 """
 
 import json
 from urllib import parse
 from urllib import request
-
 
 api_url = 'http://%s.wikipedia.org/w/api.php'
 
@@ -54,66 +51,6 @@ def opensearch(query, language='en'):
     return _run_query(query_args, language)
 
 
-def unnormalize_titles(titles, query_results):
-    """
-    Creates a map of  normalized titles from the query results
-    back onto the titles that the user submitted
-    """
-    unnormalized_titles = dict([(t, t) for t in titles])
-    if 'normalized' in query_results['query'].keys():
-        for normalized in query_results['query']['normalized']:
-            unnormalized_titles[normalized['to']] = normalized['from']
-    return unnormalized_titles
-
-
-def query_language_links(titles, language='en', lllimit=10):
-    """
-    action=query,prop=langlinks
-    Accepts a list of titles and returns a map for each title
-    that has an inter-language link, containing the lang abbreviation
-    and the corresponding title in that language
-    """
-    # url = api_url % (language)
-    query_args = {
-        'action': 'query',
-        'prop': 'langlinks',
-        'titles': '|'.join(titles),
-        'format': 'json',
-        'lllimit': lllimit
-    }
-    json_op = _run_query(query_args, language)
-    titles_map = unnormalize_titles(titles, json_op)
-    results = {}
-    for page_id in json_op['query']['pages']:
-        title = titles_map[json_op['query']['pages'][page_id]['title']]
-        if 'langlinks' in json_op['query']['pages'][page_id].keys():
-            lang_map = dict([(ll['lang'], ll['*']) for ll in json_op['query']['pages'][page_id]['langlinks']])
-            results[title] = lang_map
-    return results
-
-
-def query_text_raw(titles, language='en'):
-    """
-    action=query
-    Fetches the article in wikimarkup form
-    """
-    query_args = {
-        'action': 'query',
-        'titles': titles,
-        'rvprop': 'content',
-        'prop': 'info|revisions',
-        'format': 'json',
-        'redirects': ''
-    }
-    json_op = _run_query(query_args, language)
-    for page_id in json_op['query']['pages']:
-        response = {
-            'text': json_op['query']['pages'][page_id]['revisions'][0]['*'],
-            'revid': json_op['query']['pages'][page_id]['lastrevid'],
-        }
-        return response
-
-
 def query_text_rendered(page, language='en'):
     """
     action=parse
@@ -133,14 +70,74 @@ def query_text_rendered(page, language='en'):
     return response
 
 
-def query_rendered_altlang(title, title_lang, target_lang):
-    """
-    Takes a title and the language the title is in, asks wikipedia for
-    alternative language offerings and fetches the article hosted by
-    wikipedia in the target language.
-    """
-    lang_links = query_language_links(title, title_lang, lllimit=100)
-    if target_lang in lang_links:
-        return query_text_rendered(lang_links[target_lang], language=target_lang)
-    else:
-        return ValueError('Language not supported')
+# def unnormalize_titles(titles, query_results):
+#     """
+#     Creates a map of  normalized titles from the query results
+#     back onto the titles that the user submitted
+#     """
+#     unnormalized_titles = dict([(t, t) for t in titles])
+#     if 'normalized' in query_results['query'].keys():
+#         for normalized in query_results['query']['normalized']:
+#             unnormalized_titles[normalized['to']] = normalized['from']
+#     return unnormalized_titles
+#
+#
+# def query_language_links(titles, language='en', lllimit=10):
+#     """
+#     action=query,prop=langlinks
+#     Accepts a list of titles and returns a map for each title
+#     that has an inter-language link, containing the lang abbreviation
+#     and the corresponding title in that language
+#     """
+#     # url = api_url % (language)
+#     query_args = {
+#         'action': 'query',
+#         'prop': 'langlinks',
+#         'titles': '|'.join(titles),
+#         'format': 'json',
+#         'lllimit': lllimit
+#     }
+#     json_op = _run_query(query_args, language)
+#     titles_map = unnormalize_titles(titles, json_op)
+#     results = {}
+#     for page_id in json_op['query']['pages']:
+#         title = titles_map[json_op['query']['pages'][page_id]['title']]
+#         if 'langlinks' in json_op['query']['pages'][page_id].keys():
+#             lang_map = dict([(ll['lang'], ll['*']) for ll in json_op['query']['pages'][page_id]['langlinks']])
+#             results[title] = lang_map
+#     return results
+#
+#
+# def query_text_raw(titles, language='en'):
+#     """
+#     action=query
+#     Fetches the article in wikimarkup form
+#     """
+#     query_args = {
+#         'action': 'query',
+#         'titles': titles,
+#         'rvprop': 'content',
+#         'prop': 'info|revisions',
+#         'format': 'json',
+#         'redirects': ''
+#     }
+#     json_op = _run_query(query_args, language)
+#     for page_id in json_op['query']['pages']:
+#         response = {
+#             'text': json_op['query']['pages'][page_id]['revisions'][0]['*'],
+#             'revid': json_op['query']['pages'][page_id]['lastrevid'],
+#         }
+#         return response
+#
+#
+# def query_rendered_altlang(title, title_lang, target_lang):
+#     """
+#     Takes a title and the language the title is in, asks wikipedia for
+#     alternative language offerings and fetches the article hosted by
+#     wikipedia in the target language.
+#     """
+#     lang_links = query_language_links(title, title_lang, lllimit=100)
+#     if target_lang in lang_links:
+#         return query_text_rendered(lang_links[target_lang], language=target_lang)
+#     else:
+#         return ValueError('Language not supported')

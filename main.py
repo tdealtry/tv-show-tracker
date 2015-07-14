@@ -64,7 +64,7 @@ def add_tv_show(title):
 
     wiki_code = wiki_link.split('wiki/')[1]
 
-    wiki_content = wipy.query_text_rendered(wiki_code)['html']
+    wiki_content = wipy.query_text_rendered(wiki_code)["html"]
 
     wiki_content = clean_html(wiki_content)
     wiki_content = re.sub(r'<br ?/?>\n', ' ', wiki_content)
