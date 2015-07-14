@@ -1,6 +1,8 @@
 # TVSHOWTRACKER
 ____________________________________________________
 
+[toc]
+
 The TVSHOWTRACKER is a command line based program, 
 written in Python, 
 to organise the watch status of your TVShows. 
