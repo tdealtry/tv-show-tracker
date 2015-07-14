@@ -14,60 +14,60 @@ import json
 from urllib import parse
 from urllib import request
 
-api_url = 'http://%s.wikipedia.org/w/api.php'
-
-
-def _unicode_urlencode(params):
-    """
-    A unicode aware version of urllib.parse.urlencode.
-    Borrowed from pyfacebook :: http://github.com/sciyoshi/pyfacebook/
-    """
-    if isinstance(params, dict):
-        params = params.items()
-    return parse.urlencode([(k, isinstance(v, bytes) and v.encode('utf-8') or v)
-                            for k, v in params])
-
-
-def _run_query(args, language):
-    """
-    takes arguments and optional language argument and runs query on server
-    """
-    url = api_url % language
-    data = _unicode_urlencode(args)
-    search_results = request.urlopen(url, data=data.encode('utf-8'))
-    json_output = str(json.loads(str(search_results.read())))
-    return json_output
-
-
-def opensearch(query, language='en'):
-    """
-    action=opensearch
-    """
-    query_args = {
-        'action': 'opensearch',
-        'search': query,
-        'format': 'json'
-    }
-    return _run_query(query_args, language)
-
-
-def query_text_rendered(page, language='en'):
-    """
-    action=parse
-    Fetches the article in parsed html form
-    """
-    query_args = {
-        'action': 'parse',
-        'page': page,
-        'format': 'json',
-        'redirects': ''
-    }
-    json_op = _run_query(query_args, language)
-    response = {
-        'html': json_op['parse']['text']['*'],
-        'revid': json_op['parse']['revid'],
-    }
-    return response
+api_url = "http://%s.wikipedia.org/w/api.php"
+        
+        
+        def _unicode_urlencode(params):
+            """
+            A unicode aware version of urllib.parse.urlencode.
+            Borrowed from pyfacebook :: http://github.com/sciyoshi/pyfacebook/
+            """
+            if isinstance(params, dict):
+                params = params.items()
+            return parse.urlencode([(k, isinstance(v, bytes) and v.encode("utf-8") or v)
+                                    for k, v in params])
+        
+        
+        def _run_query(args, language):
+            """
+            takes arguments and optional language argument and runs query on server
+            """
+            url = api_url % language
+            data = _unicode_urlencode(args)
+            search_results = request.urlopen(url, data=data.encode("utf-8"))
+            json_output = str(json.loads(str(search_results.read())))
+            return json_output
+        
+        
+        def opensearch(query, language="en"):
+            """
+            action=opensearch
+            """
+            query_args = {
+                "action": "opensearch",
+                "search": query,
+                "format": "json"
+            }
+            return _run_query(query_args, language)
+        
+        
+        def query_text_rendered(page, language="en"):
+            """
+            action=parse
+            Fetches the article in parsed html form
+            """
+            query_args = {
+                "action": "parse",
+                "page": page,
+                "format": "json",
+                "redirects": ""
+            }
+            json_op = _run_query(query_args, language)
+            response = {
+                "html": json_op["parse"]["text"]["*"],
+                "revid": json_op["parse"]["revid"],
+            }
+            return response
 
 
 # def unnormalize_titles(titles, query_results):
