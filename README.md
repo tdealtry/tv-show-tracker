@@ -10,20 +10,45 @@ This way, you always now, what to watch next.
 
 It will work with the **english wikipedia** only.
 
+## [http://lxml.de/installation.html](INSTALLING INSTRUCTIONS)
+
+You need a few Python3 packages to run TVShowTracker:
+*re*, *os*, *sys*, *ast*, *urllib.request*
+should be built in. So do not worry about them.
+
+*wikipedia* and *lxml* do need to be installed manually.
+
+### [http://lxml.de/installation.html#requirements](Required)
+
+use OS specific installation method
+
+[http://askubuntu.com/questions/412178/how-to-install-pip-for-python-3-in-ubuntu-12-04-lts](src: askubuntu)
+
+sudo apt-get install libxml2-dev
+sudo apt-get install libxslt1-dev
+sudo apt-get install python3-dev
+sudo apt-get install python3-setuptools
+
+sudo easy_install3 pip
+sudo easy_install3 lxml
+
+sudo pip3 wikipedia
+
+#### MAC information (not tested!)
+[http://lxml.de/installation.html#source-builds-on-macos-x](src: lxml homepage)
+
+On MacOS-X, use the following to build the source distribution, 
+and make sure you have a working Internet connection, 
+as this will download libxml2 and libxslt in order to build them:
+
+**STATIC_DEPS=true sudo pip install lxml**
+
 ____________________________________________________
 
 *Written for **Python 3.4.3**
 GCC 4.9.2 on linux*
 
 ____________________________________________________
-
-To run the TVSHOWTRACKER, you need following packages:
-
-*import re, import os, import sys, import time, 
-import fw_wiki as wipy,
-from lxml import html, from lxml.html.clean 
-import clean_html, from lxml import etree
-import ast*
 
 fw_wiki is a slightly changed form of the 
 [*wikipydia* package](http://github.com/j2labs/wikipydia)
