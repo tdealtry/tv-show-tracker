@@ -3,12 +3,11 @@
 import re
 import os
 import sys
-import time
 import ast
 
-import requests
+from urllib import request
 
-import fw_wiki as wipy
+import wikipedia
 
 from lxml import html
 from lxml.html.clean import clean_html
@@ -21,9 +20,6 @@ table_row_start = '<tr class="vevent"'
 table_row_end = '</tr>'
 
 episodes_start = 'id="Episode'
-
-index_error_msg = 'We cannot find your TV Show. Maybe you have a type in there?'
-
 
 def clear_screen():
     os.system(['clear', 'cls'][os.name == 'nt'])
@@ -45,30 +41,28 @@ def read_file(file_name):
 def add_tv_show(title):
     if not title:
         return
+
+    search = 'list of ' + title + ' episodes'
     title_code = re.sub(' ', '_', title)
     tv_show_folder = 'tvshows/' + title_code
 
-    search = 'list of ' + title + ' episodes'
-
     try:
-        wiki_link = wipy.opensearch(search)[-1][0]
+        wiki_page = wikipedia.page(search)
+        wiki_link = wiki_page.url
         try:
             os.mkdir(tv_show_folder)
         except FileExistsError:
             pass
         clear_screen()
-    except IndexError:
+    except (IndexError, wikipedia.exceptions.PageError):
         print('\n\n\n\nThis TV Show does not exist on Wikipedia..')
         print('Maybe try, writing it differently')
         print('e.g. Blacklist = The Blacklist')
-        time.sleep(5)
+        input('[ENTER] to go back to main menu')
         display_overview()
 
-    wiki_code = wiki_link.split('wiki/')[1]
-
-    wiki_content = wipy.query_text_rendered(wiki_code)['html']
-
-    wiki_content = requests.get(wiki_link).json()['html']
+    wiki_content = request.urlopen(wiki_link)
+    wiki_content = wiki_content.read().decode('utf-8', 'ignore')
 
     wiki_content = clean_html(wiki_content)
     wiki_content = re.sub(r'<br ?/?>\n', ' ', wiki_content)
@@ -76,15 +70,15 @@ def add_tv_show(title):
     wiki_content = wiki_content.split(episodes_start)[1]
 
     wiki_content = re.sub(r'</?a.*?>', '', wiki_content)
-        
+
     no_of_tables = len(re.findall(s_t_s, wiki_content))
 
-    seasons = [s_t_s +
-               str(wiki_content.split(str.encode(s_t_s))[season + 1].split(str.encode(table_end))[0]) +
+    seasons = [str(s_t_s) +
+               str(wiki_content.split(str(s_t_s))[season + 1].split(str(table_end))[0]) +
                table_end
                for season in range(no_of_tables) if 'vevent' in
-               s_t_s +
-               str(wiki_content.split(str.encode(s_t_s))[season + 1].split(str.encode(table_end))[0]) +
+               str(s_t_s) +
+               str(wiki_content.split(str(s_t_s))[season + 1].split(str(table_end))[0]) +
                table_end]
 
     i = 1
@@ -167,52 +161,39 @@ def display_overview():
     [+] add new / update show
     [-] remove show from list
     [e] exit
-    [o] open wikipedia page in browser
     [h] help page''')
     which_tvshow = input('\n\n ACTION: ')
     if which_tvshow == 'e':
         sys.exit(0)
+    if which_tvshow == '0':
+        display_overview()
     elif which_tvshow == 'h':
         display_help()
         return
-    try:
-        tvshow = tvshows[int(which_tvshow) - 1]
-        display_tvshow(tvshow)
-    except (IndexError, ValueError, NameError):
-        if which_tvshow == '+':
-            add_tv_show(str(input(''' Which TV Show do you want to add to your collection?
-    ''').lower().strip()))
-        elif which_tvshow == '-':
-            delete_tv_show(input(''' Which TV Show should be removed?
-    Please enter the Title of the show, you want to remove.
-    ''').lower().strip())
-        elif which_tvshow == 'o':
-            open_wiki_page(input(''' For which TV Show, should we open the wiki page?
-    We can even look for wiki pages, that are not in your list!
-    HINT: Enter the TVShow Title:
-    ''').lower().strip())
-        display_overview()
-    
+    else:
+        try:
+            int(which_tvshow) <= len(tvshows)
+            display_tvshow(tvshows[int(which_tvshow) - 1])
+        except (IndexError, ValueError, NameError):
+            if which_tvshow == '+':
+                title = str(input(''' Which TV Show do you want to add to your collection?
+        ''').lower().strip())
+                add_tv_show(title)
+                display_overview()
+            elif which_tvshow == '-':
+                delete_tv_show(input(''' Which TV Show should be removed?
+        Please enter the Title of the show, you want to remove.
+        ''').lower().strip())
+                display_overview()
+            else:
+                display_overview()
 
-def open_wiki_page(title):
-    search = 'list of ' + title + ' episodes'
-    try:
-        wiki_link = wipy.opensearch(search)[-1][0]
-        open_browser = 'sensible-browser ' + wiki_link
-        os.system(open_browser)
-    except IndexError:
-        print('\n\n\n\nThis TV Show does not exist on Wikipedia..')
-        print('Maybe try, writing it differently')
-        print('e.g. Blacklist = The Blacklist')
-        time.sleep(5)
-        display_overview()
-        
         
 def get_watch_status(title, season):
     season_path = 'tvshows/' + title + '/' + str(season)
     season_list = ast.literal_eval(read_file(season_path))
-    watched = len(re.findall('True', str(season_list)))
-    total = len(re.findall('False', str(season_list))) + watched
+    watched = len(re.findall('\[True', str(season_list)))
+    total = len(re.findall('\[False', str(season_list))) + watched
     
     watch_status = '' + str(watched) + '/' + str(total)
     return watch_status
