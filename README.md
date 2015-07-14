@@ -24,15 +24,15 @@ use OS specific installation method
 
 [src: askubuntu](http://askubuntu.com/questions/412178/how-to-install-pip-for-python-3-in-ubuntu-12-04-lts)
 
-sudo apt-get install libxml2-dev
-sudo apt-get install libxslt1-dev
-sudo apt-get install python3-dev
-sudo apt-get install python3-setuptools
+- sudo apt-get install libxml2-dev
+- sudo apt-get install libxslt1-dev
+- sudo apt-get install python3-dev
+- sudo apt-get install python3-setuptools
 
-sudo easy_install3 pip
-sudo easy_install3 lxml
+- sudo easy_install3 pip
+- sudo easy_install3 lxml
 
-sudo pip3 wikipedia
+- sudo pip3 wikipedia
 
 #### MAC information (not tested!)
 [src: lxml homepage](http://lxml.de/installation.html#source-builds-on-macos-x)
