@@ -1,63 +1,56 @@
 # TVSHOWTRACKER
 ____________________________________________________
 
-The TVSHOWTRACKER is a command line based program,
-written in Python,
-to organise the watch status of your TVShows.
-You can add and remove TVShows from your list,
-and keep track of the episodes, you already watched.
-This way, you always now, what to watch next.
+The TVSHOWTRACKER is a command line based program, 
+written in Python, 
+to organise the watch status of your TVShows. 
+You can add and remove TVShows from your list, 
+and keep track of the episodes, you already watched. 
+This way, you always now, what to watch next. 
 
-It will work with the **english wikipedia** only.
+It will work with the **english wikipedia** only. 
 
 ## [INSTALLING INSTRUCTIONS](http://lxml.de/installation.html)
 
-You need a few Python3 packages to run TVShowTracker:
-*re*, *os*, *sys*, *ast*, *urllib.request*
+You need a few Python3 packages to run TVShowTracker: 
+*re*, *os*, *sys*, *ast*, *urllib.request* 
 should be built in. So do not worry about them.
 
-*wikipedia* and *lxml* do need to be installed manually.
+*wikipedia* and *lxml* do need to be installed manually. 
 
-### [Required](http://lxml.de/installation.html#requirements)
+### [Required](http://lxml.de/installation.html#requirements) 
 
-use OS specific installation method
+use OS specific installation method 
 
 [src: askubuntu](http://askubuntu.com/questions/412178/how-to-install-pip-for-python-3-in-ubuntu-12-04-lts)
 
 - sudo apt-get install libxml2-dev
 - sudo apt-get install libxslt1-dev
 - sudo apt-get install python3-dev
-- sudo apt-get install python3-setuptools
+- sudo apt-get install python3-setuptools 
 
 - sudo easy_install3 pip
 - sudo easy_install3 lxml
 
 - sudo pip3 wikipedia
 
-#### MAC information (not tested!)
-[src: lxml homepage](http://lxml.de/installation.html#source-builds-on-macos-x)
+#### MAC information (not tested!) 
+[src: lxml homepage](http://lxml.de/installation.html#source-builds-on-macos-x) 
 
 On MacOS-X, use the following to build the source distribution, 
 and make sure you have a working Internet connection, 
-as this will download libxml2 and libxslt in order to build them:
+as this will download libxml2 and libxslt in order to build them: 
 
 **STATIC_DEPS=true sudo pip install lxml**
 
 ____________________________________________________
 
-*Written for **Python 3.4.3**
-GCC 4.9.2 on linux*
+Written for **Python 3.4.3**
+
+(GCC 4.9.2 on linux)
 
 ____________________________________________________
 
-fw_wiki is a slightly changed form of the 
-[*wikipydia* package](http://github.com/j2labs/wikipydia)
-to make it compatible to Python 3.4.3
-For fw_wiki, you additionally need:
-
-*simplejson*
-
-____________________________________________________
 
 **Enter the wanted symbol or number
 then press ENTER to send your request.
@@ -88,9 +81,6 @@ in order to have the program recognize your wish.**
     or *you are **done*** watching ;)
 + [e] exit
   + simple as it is, exit the TVSHOWTRACKER
-+ [o] open wikipedia page in browser
-  + If there exists a wikipedia page for a TVShow, 
-    you can open it in the default browser with [o]
 + [h] help page
   + That's exactly, where you are right now!
   
