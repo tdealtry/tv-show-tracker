@@ -1,7 +1,6 @@
 # TVSHOWTRACKER
 ____________________________________________________
 
-[tableofcontents]
 
 The TVSHOWTRACKER is a command line based program, 
 written in Python, 
