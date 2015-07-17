@@ -12,6 +12,7 @@ import wikipedia
 from lxml import html
 from lxml.html.clean import clean_html
 from lxml import etree
+from lxml.etree import Error as lxml_error
 
 s_t_s = '<table class="wikitable plainrowheaders"'
 table_end = '</table>'
@@ -109,12 +110,15 @@ def add_tv_show(title):
 
     tvs = []
     for season in seasons:
-        table = etree.XML(season)
-        rows = iter(table)
-        headers = [col.text.lower() for col in next(rows)]
-        for row in rows:
-            values = [col.text for col in row]
-            tvs.append(list(zip(headers, values)))
+        try:
+            table = etree.XML(season)
+            rows = iter(table)
+            headers = [col.text.lower() for col in next(rows)]
+            for row in rows:
+                values = [col.text for col in row]
+                tvs.append(list(zip(headers, values)))
+        except lxml_error:
+            return
 
     # tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
     
@@ -181,9 +185,12 @@ def display_overview():
                 add_tv_show(title)
                 display_overview()
             elif which_tvshow == '-':
-                delete_tv_show(input(''' Which TV Show should be removed?
+                del_show = input(''' Which TV Show should be removed?
         Please enter the Title of the show, you want to remove.
-        ''').lower().strip())
+        ''').lower().strip()
+                if not del_show:
+                    display_overview()
+                delete_tv_show(del_show)
                 display_overview()
             else:
                 display_overview()
