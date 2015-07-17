@@ -114,10 +114,13 @@ def add_tv_show(title):
         try:
             table = etree.XML(season)
             rows = iter(table)
-            headers = [col.text.lower() for col in next(rows)]
-            for row in rows:
-                values = [col.text for col in row]
-                tvs.append(list(zip(headers, values)))
+            try:
+                headers = [col.text.lower() for col in next(rows)]
+                for row in rows:
+                    values = [col.text for col in row]
+                    tvs.append(list(zip(headers, values)))
+            except AttributeError:
+                display_overview()
         except LxmlError:
             return
 
