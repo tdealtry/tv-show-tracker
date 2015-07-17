@@ -12,7 +12,7 @@ import wikipedia
 from lxml import html
 from lxml.html.clean import clean_html
 from lxml import etree
-from lxml.etree import Error as lxml_error
+from lxml.etree import Error as LxmlError
 
 s_t_s = '<table class="wikitable plainrowheaders"'
 table_end = '</table>'
@@ -21,6 +21,7 @@ table_row_start = '<tr class="vevent"'
 table_row_end = '</tr>'
 
 episodes_start = 'id="Episode'
+
 
 def clear_screen():
     os.system(['clear', 'cls'][os.name == 'nt'])
@@ -117,7 +118,7 @@ def add_tv_show(title):
             for row in rows:
                 values = [col.text for col in row]
                 tvs.append(list(zip(headers, values)))
-        except lxml_error:
+        except LxmlError:
             return
 
     # tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
