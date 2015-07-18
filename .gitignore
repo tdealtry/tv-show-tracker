@@ -11,6 +11,10 @@ __pycache__/
 # idea?
 .idea/
 
+# report and all images
+img/*
+wohlgemuth*
+
 # Distribution / packaging
 .Python
 env/

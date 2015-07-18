@@ -4,28 +4,22 @@ import re
 import os
 import sys
 import ast
-
 from urllib import request
 
 import wikipedia
-
 from lxml import html
 from lxml.html.clean import clean_html
-from lxml import etree
-from lxml.etree import Error as LxmlError
 
 s_t_s = '<table class="wikitable plainrowheaders"'
 table_end = '</table>'
-
 table_row_start = '<tr class="vevent"'
 table_row_end = '</tr>'
-
 episodes_start = 'id="Episode'
 
 
 def clear_screen():
     os.system(['clear', 'cls'][os.name == 'nt'])
-    
+
 
 def write_file(file_name, content):
     file = open(file_name, 'w+')
@@ -51,12 +45,14 @@ def add_tv_show(title):
     try:
         wiki_page = wikipedia.page(search)
         wiki_link = wiki_page.url
+
         try:
             os.mkdir(tv_show_folder)
         except FileExistsError:
             pass
         clear_screen()
     except (IndexError, wikipedia.exceptions.PageError):
+        wiki_link = ''
         print('\n\n\n\nThis TV Show does not exist on Wikipedia..')
         print('Maybe try, writing it differently')
         print('e.g. Blacklist = The Blacklist')
@@ -65,31 +61,26 @@ def add_tv_show(title):
 
     wiki_content = request.urlopen(wiki_link)
     wiki_content = wiki_content.read().decode('utf-8', 'ignore')
-
     wiki_content = clean_html(wiki_content)
-    wiki_content = re.sub(r'<br ?/?>\n', ' ', wiki_content)
-
     wiki_content = wiki_content.split(episodes_start)[1]
-
+    wiki_content = re.sub(r'<br ?/?>\n', ' ', wiki_content)
     wiki_content = re.sub(r'</?a.*?>', '', wiki_content)
 
     no_of_tables = len(re.findall(s_t_s, wiki_content))
 
-    seasons = [str(s_t_s) +
-               str(wiki_content.split(str(s_t_s))[season + 1].split(str(table_end))[0]) +
+    seasons = [s_t_s +
+               str(wiki_content).split(s_t_s)[season + 1].split(table_end)[0] +
                table_end
                for season in range(no_of_tables) if 'vevent' in
-               str(s_t_s) +
-               str(wiki_content.split(str(s_t_s))[season + 1].split(str(table_end))[0]) +
+               s_t_s +
+               str(wiki_content).split(s_t_s)[season + 1].split(table_end)[0] +
                table_end]
 
     i = 1
     for season in seasons:
-        
+
         season_file_name = 'tvshows/' + title_code + '/' + title_code + '_' + str(seasons.index(season) + 1) + '.txt'
-
         doc_root = html.fromstring(season)
-
         header = ['[]', 'Total', 'Episode', 'Title']
 
         eps = doc_root.xpath('//table/tr[@class="vevent"]/td[@class="summary"]//text()')
@@ -102,30 +93,6 @@ def add_tv_show(title):
         episodes.insert(0, header)
         write_file(season_file_name, str(episodes))
 
-    nc = ''
-    for season in seasons:
-        table = html.fragment_fromstring(season)
-        for row in table.iterchildren():
-            row.remove(row.getchildren()[0])
-        nc += html.tostring(table).decode('utf-8')
-
-    tvs = []
-    for season in seasons:
-        try:
-            table = etree.XML(season)
-            rows = iter(table)
-            try:
-                headers = [col.text.lower() for col in next(rows)]
-                for row in rows:
-                    values = [col.text for col in row]
-                    tvs.append(list(zip(headers, values)))
-            except AttributeError:
-                display_overview()
-        except LxmlError:
-            return
-
-    # tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
-    
     return seasons
 
 
@@ -134,28 +101,17 @@ def delete_tv_show(title):
     os.system(remove_tv_show)
 
 
-def start_from_scratch():
-    remove_everything = 'rm -rf tvshows/*'
-    os.system(remove_everything)
-
-
 def display_header(to_display):
-    print('\n', 5*' ', to_display, '\n')
-
-
-def delete_empty_dirs():
-    for path, dirs, files in os.walk('.'):
-        if not os.listdir(path):
-            os.rmdir(path)
+    print('\n', 5 * ' ', to_display, '\n')
 
 
 def display_overview():
     clear_screen()
-    display_header('TVShowTracker')    
+    display_header('TVShowTracker')
     path = 'tvshows/'
 
     for path, dirs, files in os.walk(path):
-        dirs.sort()        
+        dirs.sort()
         for directory in dirs:
             tv_show = '%7s' % ('[' + str(dirs.index(directory) + 1) + ']   ') + \
                       '%-20s' % (re.sub('_', ' ', directory))
@@ -164,6 +120,7 @@ def display_overview():
     try:
         tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
     except IndexError:
+        tvshows = []
         print(' No TVShow added, yet - Enter [+] to add some shows!')
     print('''\n [number] of tv show\n
     [+] add new / update show
@@ -199,16 +156,6 @@ def display_overview():
             else:
                 display_overview()
 
-        
-def get_watch_status(title, season):
-    season_path = 'tvshows/' + title + '/' + str(season)
-    season_list = ast.literal_eval(read_file(season_path))
-    watched = len(re.findall('\[True', str(season_list)))
-    total = len(re.findall('\[False', str(season_list))) + watched
-    
-    watch_status = '' + str(watched) + '/' + str(total)
-    return watch_status
-
 
 def display_help():
     clear_screen()
@@ -239,19 +186,15 @@ def display_tvshow(title):
             display_tvshow(title)
     except ValueError:
         display_tvshow(title)
-        
-
-def read_season(title, season):
-    season_path = 'tvshows/' + title + '/' + title + '_' + str(season) + '.txt'
-    season_list = ast.literal_eval(read_file(season_path))
-    return season_list
 
 
 def display_season(title, season):
+    season_path = 'tvshows/' + title + '/' + title + '_' + str(season) + '.txt'
+    season_list = ast.literal_eval(read_file(season_path))
+
     clear_screen()
     display_header('' + re.sub('_', ' ', title).capitalize() + ' - Season ' + str(season))
-    
-    season_list = read_season(title, season)
+
     for episode in season_list:
         ep = ' %-7s' % ('[X]' if episode[0] else '[ ]') + \
              '%7s' % (str(episode[2])) + \
@@ -283,6 +226,15 @@ def display_season(title, season):
     display_season(title, season)
 
 
+def get_watch_status(title, season):
+    season_path = 'tvshows/' + title + '/' + str(season)
+    season_list = ast.literal_eval(read_file(season_path))
+    watched = len(re.findall('\[True', str(season_list)))
+    total = len(re.findall('\[False', str(season_list))) + watched
+    watch_status = '' + str(watched) + '/' + str(total)
+    return watch_status
+
+
 def toggle_episode_watched(title, season, episode):
     season_path = 'tvshows/' + title + '/' + title + '_' + str(season) + '.txt'
     season_list = ast.literal_eval(read_file(season_path))
@@ -295,12 +247,11 @@ def main():
     try:
         os.mkdir('tvshows')
     except FileExistsError:
-        pass 
-    try:
-        tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
-    except (IndexError, NameError):
+        pass
+    if not os.walk('tvshows/'):
         print('NO TVSHOW ADDED, YET. PLEASE USE [+] TO ADD A NEW SHOW')
     print('\n')
     display_overview()
+
 
 main()
