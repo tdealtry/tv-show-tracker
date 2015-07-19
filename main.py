@@ -6,6 +6,8 @@ import sys
 import ast
 from urllib import request
 
+from colorama import Fore, Back, Style
+
 import wikipedia
 from lxml import html
 from lxml.html.clean import clean_html
@@ -102,7 +104,7 @@ def delete_tv_show(title):
 
 
 def display_header(to_display):
-    print('\n', 5 * ' ', to_display, '\n')
+    print(Back.GREEN + '\n', 5 * ' ', to_display, '\n' + Back.RESET)
 
 
 def display_overview():
@@ -121,7 +123,7 @@ def display_overview():
         tvshows = sorted([dirs for path, dirs, files in os.walk('tvshows/') if len(dirs) > 0][0])
     except IndexError:
         tvshows = []
-        print(' No TVShow added, yet - Enter [+] to add some shows!')
+        print(Fore.RED + ' No TVShow added, yet - Enter [+] to add some shows!' + Fore.RESET)
     print('''\n [number] of tv show\n
     [+] add new / update show
     [-] remove show from list
