@@ -12,7 +12,7 @@ import wikipedia
 from lxml import html
 from lxml.html.clean import clean_html
 
-s_t_s = '<table class="wikitable plainrowheaders"'
+s_t_s = '<table class="wikitable plainrowheaders wikiepisodetable"'
 table_end = '</table>'
 table_row_start = '<tr class="vevent"'
 table_row_end = '</tr>'
@@ -64,7 +64,8 @@ def add_tv_show(title):
     wiki_content = request.urlopen(wiki_link)
     wiki_content = wiki_content.read().decode('utf-8', 'ignore')
     wiki_content = clean_html(wiki_content)
-    wiki_content = wiki_content.split(episodes_start)[1]
+    #print (wiki_content)
+    wiki_content = s_t_s + wiki_content.split(s_t_s,1)[1]
     wiki_content = re.sub(r'<br ?/?>\n', ' ', wiki_content)
     wiki_content = re.sub(r'</?a.*?>', '', wiki_content)
 
@@ -85,7 +86,8 @@ def add_tv_show(title):
         doc_root = html.fromstring(season)
         header = ['[]', 'Total', 'Episode', 'Title']
 
-        eps = doc_root.xpath('//table/tr[@class="vevent"]/td[@class="summary"]//text()')
+        eps = doc_root.xpath('//table[@class="wikitable plainrowheaders wikiepisodetable"]/tbody/tr[@class="vevent"]/td[@class="summary"]//text()')
+        #print (eps)
         ep = [ep for ep in eps if len(ep) > 2]
 
         episodes = []
@@ -255,5 +257,9 @@ def main():
     print('\n')
     display_overview()
 
-
-main()
+if 0:
+    x = input('Enter show (default Deadwood)')
+    show = x if x else "Deadwood"
+    add_tv_show(show)
+else:
+    main()
